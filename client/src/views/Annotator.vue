@@ -60,6 +60,14 @@
           @setcursor="setCursor"
           ref="dextr"
         />
+
+        <FilterTool
+          v-model="activeTool"
+          :scale="image.scale"
+          @setcursor="setCursor"
+          ref="filter"
+        />
+
       </div>
       <hr />
 
@@ -197,6 +205,13 @@
               :dextr="$refs.dextr"
             />
           </div>
+
+          <div v-if="$refs.filter != null">
+            <FilterPanel
+              :filter="$refs.filter"
+            />
+          </div>
+
         </div>
       </div>
     </aside>
@@ -241,6 +256,7 @@ import EraserTool from "@/components/annotator/tools/EraserTool";
 import BrushTool from "@/components/annotator/tools/BrushTool";
 import KeypointTool from "@/components/annotator/tools/KeypointTool";
 import DEXTRTool from "@/components/annotator/tools/DEXTRTool";
+import FilterTool from "@/components/annotator/tools/FilterTool";
 
 import CopyAnnotationsButton from "@/components/annotator/tools/CopyAnnotationsButton";
 import CenterButton from "@/components/annotator/tools/CenterButton";
@@ -262,6 +278,7 @@ import BrushPanel from "@/components/annotator/panels/BrushPanel";
 import EraserPanel from "@/components/annotator/panels/EraserPanel";
 import KeypointPanel from "@/components/annotator/panels/KeypointPanel";
 import DEXTRPanel from "@/components/annotator/panels/DEXTRPanel";
+import FilterPanel from "@/components/annotator/panels/FilterPanel";
 
 import { mapMutations } from "vuex";
 
@@ -297,7 +314,9 @@ export default {
     KeypointPanel,
     AnnotateButton,
     DEXTRTool,
-    DEXTRPanel
+    DEXTRPanel,
+    FilterTool,
+    FilterPanel
   },
   mixins: [toastrs, shortcuts],
   props: {
