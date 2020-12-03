@@ -1,27 +1,41 @@
-# Backend environment docker image
-FROM jsbroks/coco-annotator:python-env
-
-RUN apt-get update
-RUN apt-get install -y git
-
-WORKDIR /workspace/
+# CUDA Backend environment docker image
+FROM nvidia/cuda:10.2-cudnn7-runtime-ubuntu18.04
 
 # Copy backend
+WORKDIR /workspace/
 COPY ./backend/requirements.txt /workspace/
+
+# Python3 install
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+  && apt-get install -y python3-pip python3.6-dev \
+  && cd /usr/local/bin \
+  && ln -s /usr/bin/python3 python \
+  && pip3 install --upgrade pip
 
 # Install python package dependices
 RUN pip install -r requirements.txt && \
     pip install gunicorn[eventlet]==19.9.0 && \
     pip install pycocotools
 
+# Opencv dependencies
+RUN apt-get update \
+  && apt install -y libsm6 libxext6 \
+  && apt-get install -y libxrender-dev
+
+# install git
+RUN apt-get update
+RUN apt-get install -y git
+
 # Install maskrcnn
-# RUN git clone --single-branch --depth 1 https://github.com/matterport/Mask_RCNN.git /tmp/maskrcnn
-# RUN cd /tmp/maskrcnn && pip install -r requirements.txt
-# RUN cd /tmp/maskrcnn && python3 setup.py install
+RUN git clone --single-branch --depth 1 https://github.com/matterport/Mask_RCNN.git /tmp/maskrcnn
+RUN cd /tmp/maskrcnn && pip install -r requirements.txt
+RUN cd /tmp/maskrcnn && python3 setup.py install
+RUN pip install tensorflow==1.13.1
 
 # Install DEXTR
-# RUN git clone --single --depth 1 https://github.com/jsbroks/dextr-keras.git /tmp/dextr && \
-#     cd /tmp/dextr && \
-#     python setup.py install
+RUN git clone --single --depth 1 https://github.com/jsbroks/dextr-keras.git /tmp/dextr && \
+    cd /tmp/dextr && \
+    python setup.py install
 
 RUN apt-get -y -o Dpkg::Options::="--force-confmiss" install --reinstall netbase

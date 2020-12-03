@@ -25,4 +25,5 @@ h5py
 imgaug
 IPython[all]
 jupyter
-torch
+Werkzeug==0.15.2
+torch==1.7.0
