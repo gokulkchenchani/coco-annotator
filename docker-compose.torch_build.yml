@@ -21,6 +21,7 @@ services:
       - SECRET_KEY=RandomSecretKeyHere
       - FILE_WATCHER=true
       - NAME=Test Annotator
+      - NVIDIA_VISIBLE_DEVICES=all
       - CUDA_DEVICE_NUM=0
       - TORCH_MASK_RCNN_FILE=/models/BONN_SweetPepper_Protected_2019.pth
       - TORCH_MASK_RCNN_CLASSES=pepper
