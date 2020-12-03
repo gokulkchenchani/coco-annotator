@@ -21,7 +21,7 @@ services:
       - SECRET_KEY=RandomSecretKeyHere
       - FILE_WATCHER=true
       - NAME=Test Annotator
-      - CUDA_DEVICE=cuda:0
+      - CUDA_DEVICE_NUM=0
       - TORCH_MASK_RCNN_FILE=/models/BONN_SweetPepper_Protected_2019.pth
       - TORCH_MASK_RCNN_CLASSES=pepper
       - MASK_RCNN_FILE=/models/mask_rcnn_coco.h5

@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger('gunicorn.error')
 
 
-CUDA_DEVICE = AnnotatorConfig.CUDA_DEVICE
+CUDA_DEVICE_NUM = AnnotatorConfig.CUDA_DEVICE_NUM
 
 MODEL_DIR = "/workspace/models"
 COCO_MODEL_PATH = AnnotatorConfig.TORCH_MASK_RCNN_FILE
