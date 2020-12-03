@@ -2,12 +2,11 @@ from config import Config as AnnotatorConfig
 from skimage.transform import resize
 import imantics as im
 
-from keras.preprocessing.image import img_to_array
-from mrcnn.config import Config
-import mrcnn.model as modellib
 import logging
 logger = logging.getLogger('gunicorn.error')
 
+
+CUDA_DEVICE = AnnotatorConfig.CUDA_DEVICE
 
 MODEL_DIR = "/workspace/models"
 COCO_MODEL_PATH = AnnotatorConfig.TORCH_MASK_RCNN_FILE
@@ -18,6 +17,8 @@ CLASS_NAMES = AnnotatorConfig.TORCH_MASK_RCNN_CLASSES.split(',')
 class TorchMaskRCNN():
 
     def __init__(self):
+
+        logger.info(f"[Torch placeholders] Specified CUDA device: {CUDA_DEVICE}")
 
         logger.info(f"[Torch placeholders] Instanciating Torch MaskRCNN model: {COCO_MODEL_PATH}")
         self.model = [0]
