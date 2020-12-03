@@ -1,10 +1,10 @@
 <template>
   <div v-show="filter.isActive">
-    <PanelToggle name="ExG" v-model="filter.color.exg" />
-    <PanelToggle name="ExGExR" v-model="filter.color.exgexr" />
-    <PanelToggle name="CIVE" v-model="filter.color.cive" />
+    <PanelToggle name="ExG" @click="filter.exg" />
+    <PanelToggle name="ExGExR" @click="filter.exgexr" />
+    <PanelToggle name="CIVE" @click="filter.cive" />
     <PanelInputNumber
-      v-show="filter.color.cive"
+      v-show="filter.cive"
       name="R"
       min="-1.0"
       max="1.0"
@@ -12,7 +12,7 @@
       v-model="filter.settings.cive_r"
     />
     <PanelInputNumber
-      v-show="filter.color.cive"
+      v-show="filter.cive"
       name="G"
       min="-1.0"
       max="1.0"
@@ -20,7 +20,7 @@
       v-model="filter.settings.cive_g"
     />
     <PanelInputNumber
-      v-show="filter.color.cive"
+      v-show="filter.cive"
       name="B"
       min="-1.0"
       max="1.0"
@@ -28,7 +28,7 @@
       v-model="filter.settings.cive_b"
     />
     <PanelInputNumber
-      v-show="filter.color.cive"
+      v-show="filter.cive"
       name="bias"
       min="-20.0"
       max="20.0"
@@ -36,9 +36,9 @@
       v-model="filter.settings.cive_bias"
     />
     <PanelButton 
-      v-show="filter.color.cive"
+      v-show="filter.cive"
       name="Reset" 
-      v-model="filter.color.cive_reset" />
+      @click="filter.cive_reset" />
 
   </div>
 </template>
