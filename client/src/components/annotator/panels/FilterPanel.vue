@@ -1,8 +1,8 @@
 <template>
   <div v-show="filter.isActive">
-    <PanelToggle name="ExG" @click="filter.exg" />
-    <PanelToggle name="ExGExR" @click="filter.exgexr" />
-    <PanelToggle name="CIVE" @click="filter.cive" />
+    <PanelButton name="ExG" @click="filter.exg" />
+    <PanelButton name="ExGExR" @click="filter.exgexr" />
+    <PanelButton name="CIVE" v-model="filter.cive" @click="filter.cive" />
     <PanelInputNumber
       v-show="filter.cive"
       name="R"

@@ -24,7 +24,7 @@ if DEXTR_LOADED:
 else:
     logger.warning("DEXTR model is disabled.")
 
-from ..util.vegetation_filters import ExG as exg_index
+from ..util.vegetation_filters import model as exg_index
 
 api = Namespace('model', description='Model related operations')
 
@@ -43,6 +43,7 @@ class MaskRCNN(Resource):
 
     @login_required
     @api.expect(dextr_args)
+
     def post(self, image_id):
         """ COCO data test """
 
@@ -82,18 +83,27 @@ class MaskRCNN(Resource):
         coco = maskrcnn.detect(im)
         return {"coco": coco}
 
-@api.route('/exg')
-class MaskRCNN(Resource):
-
+@api.route('/exg/<int:image_id>')
+class ExG(Resource):
+    
     @login_required
-    @api.expect(image_upload)
-    def post(self):
-        """ COCO data test """
-        # if not MASKRCNN_LOADED:
-        #     return {"disabled": True, "coco": {}}
+    
+    def post(self, image_id):
+        print("******************************************************************")
+        """ COCO data test """      
+        image_model = ImageModel.objects(id=image_id).first()
+        if not image_model:
+            return {"message": "Invalid image ID"}, 400
+        
+        image = Image.open(image_model.path)
+        result = exg_index.predict_mask(image)
 
-        args = image_upload.parse_args()
-        print("****************************************************************************************")
-        im = Image.open(args.get('image'))
-        exg = exg_index.detect(im)
-        return {"exg": exg}
+        return { "segmentaiton": Mask(result).polygons().segmentation }
+    # @login_required
+    # @api.expect(image_upload)
+    # def post(self):
+
+    #     args = image_upload.parse_args()
+    #     im = Image.open(args.get('image'))
+    #     exg = exg_index.detect(im)
+    #     return {"exg": exg}

@@ -23,7 +23,6 @@ export default {
         cive_b:  0.385,
         cive_bias: 18.78745
       },
-      points: []
     };
   },
   methods: {
@@ -36,10 +35,8 @@ export default {
         this.loading = true;
 
         axios
-          .post(`/api/model/exg`, data, {
-            headers: {
-              "Content-Type": "multipart/form-data"
-            }
+          .post(`/api/model/exg/${this.$parent.image.id}`, {
+            ...this.settings
           })
           .then(response => {
             let coco = response.data.coco || {};
@@ -89,7 +86,7 @@ export default {
 
     },
     cive_reset(){
-      this.settings.cive_r = 0.441;
+      this.settings.cive_r = 0.4414;
       this.settings.cive_g = 0.811;
       this.settings.cive_b = 0.385;
       this.settings.cive_bias = 18.78745;
@@ -101,12 +98,7 @@ export default {
     }
   },
   watch: {
-    loading() {
-      this.icon = this.loading ? "fa-spinner fa-spin" : "fa-filter";
-    },
-    disabled() {
-      this.iconColor = this.disabled ? this.color.disabled : this.color.enabled;
-    }
+    
   }
 };
 </script>
