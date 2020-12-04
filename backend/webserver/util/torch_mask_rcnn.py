@@ -2,6 +2,8 @@ from config import Config as AnnotatorConfig
 from skimage.transform import resize
 import imantics as im
 
+import torch
+
 import logging
 logger = logging.getLogger('gunicorn.error')
 
@@ -18,7 +20,16 @@ class TorchMaskRCNN():
 
     def __init__(self):
 
-        logger.info(f"[Torch placeholders] Specified CUDA device: {CUDA_DEVICE}")
+        self.device = 'cpu'
+        # try finding the specified CUDA device, use cpu otherwise
+        if CUDA_DEVICE_NUM:
+            try:
+                assert torch.cuda.is_available()
+                assert int(CUDA_DEVICE_NUM) < torch.cuda.device_count()
+                self.device = torch.device(f'cuda:{int(CUDA_DEVICE_NUM)}')
+                logger.info(f"[Torch] Using CUDA device ({CUDA_DEVICE_NUM})")
+            except:
+                logger.info(f"[Torch] Unable find CUDA device ({CUDA_DEVICE_NUM}), using cpu instead")
 
         logger.info(f"[Torch placeholders] Instanciating Torch MaskRCNN model: {COCO_MODEL_PATH}")
         self.model = [0]
