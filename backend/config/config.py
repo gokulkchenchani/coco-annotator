@@ -63,7 +63,13 @@ class Config:
     LOGIN_DISABLED = _get_bool("LOGIN_DISABLED", False)
     ALLOW_REGISTRATION = _get_bool('ALLOW_REGISTRATION', True)
 
+    ### CUDA support
+    CUDA_DEVICE_NUM = os.getenv("CUDA_DEVICE_NUM", "")
+
     ### Models
+    TORCH_MASK_RCNN_FILE = os.getenv("TORCH_MASK_RCNN_FILE", "")
+    TORCH_MASK_RCNN_CLASSES = os.getenv("TORCH_MASK_RCNN_CLASSES", "pepper")
+
     MASK_RCNN_FILE = os.getenv("MASK_RCNN_FILE", "")
     MASK_RCNN_CLASSES = os.getenv("MASK_RCNN_CLASSES", "BG")
 

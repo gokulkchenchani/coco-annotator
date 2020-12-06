@@ -18,6 +18,12 @@ if MASKRCNN_LOADED:
 else:
     logger.warning("MaskRCNN model is disabled.")
 
+TORCHMASKRCNN_LOADED = os.path.isfile(Config.TORCH_MASK_RCNN_FILE)
+if TORCHMASKRCNN_LOADED:
+    from ..util.torch_mask_rcnn import model as torch_maskrcnn
+else:
+    logger.warning("Torch MaskRCNN model is disabled.")
+
 DEXTR_LOADED = os.path.isfile(Config.DEXTR_FILE)
 if DEXTR_LOADED:
     from ..util.dextr import model as dextr
@@ -57,11 +63,11 @@ class MaskRCNN(Resource):
 
         if len(points) != 4:
             return {"message": "Invalid points entered"}, 400
-        
+
         image_model = ImageModel.objects(id=image_id).first()
         if not image_model:
             return {"message": "Invalid image ID"}, 400
-        
+
         image = Image.open(image_model.path)
         result = dextr.predict_mask(image, points)
 
@@ -83,17 +89,17 @@ class MaskRCNN(Resource):
         coco = maskrcnn.detect(im)
         return {"coco": coco}
 
+
 @api.route('/exg/<int:image_id>')
 class ExG(Resource):
-    
+
     @login_required
-    
+
     def post(self, image_id):
-        """ COCO data test """      
         image_model = ImageModel.objects(id=image_id).first()
         if not image_model:
             return {"message": "Invalid image ID"}, 400
-        
+
         image = Image.open(image_model.path)
         result = exg_index.predict_mask(image)
 
@@ -106,3 +112,19 @@ class ExG(Resource):
     #     im = Image.open(args.get('image'))
     #     exg = exg_index.detect(im)
     #     return {"exg": exg}
+
+
+@api.route('/torch_maskrcnn')
+class MaskRCNN(Resource):
+
+    @login_required
+    @api.expect(image_upload)
+    def post(self):
+        """ COCO data test """
+        if not TORCHMASKRCNN_LOADED:
+            return {"disabled": True, "coco": {}}
+
+        args = image_upload.parse_args()
+        im = Image.open(args.get('image'))
+        coco = torch_maskrcnn.detect(im)
+        return {"coco": coco}
