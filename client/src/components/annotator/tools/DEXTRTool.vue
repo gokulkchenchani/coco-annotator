@@ -81,7 +81,6 @@ export default {
               path.closePath();
               compoundPath.addChild(path);
             }
-
             currentAnnotation.unite(compoundPath);
           })
           .finally(() => points.forEach(point => point.remove()));

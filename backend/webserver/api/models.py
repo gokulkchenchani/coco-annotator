@@ -89,7 +89,6 @@ class ExG(Resource):
     @login_required
     
     def post(self, image_id):
-        print("******************************************************************")
         """ COCO data test """      
         image_model = ImageModel.objects(id=image_id).first()
         if not image_model:

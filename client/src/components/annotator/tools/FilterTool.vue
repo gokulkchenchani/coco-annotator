@@ -39,44 +39,25 @@ export default {
             ...this.settings
           })
           .then(response => {
-            let coco = response.data.coco || {};
+            let segments = response.data.segmentaiton;
+            let center = new paper.Point(width, height);
 
-            let images = coco.images || [];
-            let categories = coco.categories || [];
-            let annotations = coco.annotations || [];
+            let compoundPath = new paper.CompoundPath();
+            for (let i = 0; i < segments.length; i++) {
+              let polygon = segments[i];
+              let path = new paper.Path();
 
-            if (
-              images.length == 0 ||
-              categories.length == 0 ||
-              annotations.length == 0
-            ) {
-              // Error
-              return;
+              for (let j = 0; j < polygon.length; j += 2) {
+                let point = new paper.Point(polygon[j], polygon[j + 1]);
+                path.add(point.subtract(center));
+              }
+              path.closePath();
+              compoundPath.addChild(path);
             }
-            // Index categoires
-            let indexedCategories = {};
-            categories.forEach(category => {
-              indexedCategories[category.id] = category;
-            });
 
-            annotations.forEach(annotation => {
-              let keypoints = annotation.keypoints || [];
-              let segmentation = annotation.segmentation || [];
-              let category = indexedCategories[annotation.category_id];
-              let isbbox = annotation.isbbox || false;
-
-              this.$parent.addAnnotation(
-                category.name,
-                segmentation,
-                keypoints,
-                isbbox=isbbox
-              );
-            });
+            currentAnnotation.unite(compoundPath);
           })
-          .catch(() => {
-            this.axiosReqestError("Filter-Exg", "Could not run filter!!");
-          })
-          .finally(() => (this.loading = false));
+          .finally(() => points.forEach(point => point.remove()));
       });
     },
     exgexr(){
