@@ -65,6 +65,12 @@
       step="0.001"
       v-model="filter.settings.cive_bias"
     />
+    <PanelInputNumber v-show="filter.settings.cive" name="Threshold"
+      min="0"
+      max="255"
+      step="1"
+      v-model="filter.settings.cive_threshold"
+    />
     <PanelButton v-show="filter.settings.cive" name="Apply" 
       @click="filter.cive_apply" />
     <PanelButton  v-show="filter.settings.cive" name="Reset" 

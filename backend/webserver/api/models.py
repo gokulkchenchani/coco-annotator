@@ -58,7 +58,7 @@ cive_args.add_argument('cive_r', location='json', type=float, default=0.441)
 cive_args.add_argument('cive_g', location='json', type=float, default=0.811)
 cive_args.add_argument('cive_b', location='json', type=float, default=0.385)
 cive_args.add_argument('cive_bias', location='json', type=float, default=18.78745)
-cive_args.add_argument('cive_threshold', location='json', type=int, default=30)
+cive_args.add_argument('cive_threshold', location='json', type=int, default=10)
 
 @api.route('/dextr/<int:image_id>')
 class MaskRCNN(Resource):

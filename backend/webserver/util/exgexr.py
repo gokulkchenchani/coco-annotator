@@ -15,14 +15,14 @@ class ExGExR():
     def predictMask(self, image, const=1.4, threshold=30):
         image = image.convert('RGB')
         r, g, b = image.split()
-        exg = 2 * np.array(g) -  np.array(b) - np.array(r)
-        exg[exg < threshold]  = 0
-        exg[exg > threshold] = 255
+        exg = 2 * np.array(g).astype('int32') -  np.array(b).astype('int32') - np.array(r).astype('int32')
+        exg[exg<threshold] = 0
+        exg[exg>threshold] = 255
         exg = exg.astype('uint8')
-        eexr = exg - (const * np.array(r) - np.array(g))
+        eexr = exg - (1.4 * np.array(r).astype('int32') - np.array(g).astype('int32'))
+        eexr[eexr<threshold] = 0
+        eexr[eexr>threshold] = 255
         img = Image.fromarray(eexr)
-        img = img.filter(ImageFilter.MinFilter(5))
-        img = img.filter(ImageFilter.MedianFilter(size=5))
         return img
 
 

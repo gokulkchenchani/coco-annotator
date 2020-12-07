@@ -14,14 +14,13 @@ class ExG():
 
     def predictMask(self, image, padding=50, threshold=30):
         image = image.convert('RGB')
+        # print(image.getbands(), flush=True)
         r, g, b = image.split()
-        exg = 2 * np.array(g) -  np.array(b) - np.array(r)
+        exg = 2 * np.array(g).astype('int32') -  np.array(b).astype('int32') - np.array(r).astype('int32')
         exg[exg < threshold]  = 0
         exg[exg > threshold] = 255
         exg = exg.astype('uint8')
         img = Image.fromarray(exg)
-        img = img.filter(ImageFilter.MinFilter(5))
-        img = img.filter(ImageFilter.MedianFilter(size=5))
         return img
 
 

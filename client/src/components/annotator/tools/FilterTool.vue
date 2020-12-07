@@ -28,7 +28,8 @@ export default {
         cive_r:  0.441,
         cive_g:  0.811,
         cive_b:  0.385,
-        cive_bias: 18.78745
+        cive_bias: 18.78745,
+        cive_threshold: 10
       }
     };
   },
@@ -141,6 +142,7 @@ export default {
       this.settings.cive_g = 0.811;
       this.settings.cive_b = 0.385;
       this.settings.cive_bias = 18.78745;
+      this.cive_threshold = 10
     }
   },
   computed: {
