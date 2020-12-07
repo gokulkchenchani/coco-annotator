@@ -11,6 +11,8 @@
           @setcursor="setCursor"
           ref="select"
         />
+
+        
         <hr />
 
         <BBoxTool
@@ -66,7 +68,7 @@
           :scale="image.scale"
           @setcursor="setCursor"
           ref="filter"
-        />
+        />s
 
       </div>
       <hr />

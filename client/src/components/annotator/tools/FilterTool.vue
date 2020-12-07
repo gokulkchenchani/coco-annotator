@@ -55,6 +55,7 @@ export default {
 
           let compoundPath = new paper.CompoundPath();
           for (let i = 0; i < segments.length; i++) {
+            // segments.length
             let polygon = segments[i];
             let path = new paper.Path();
 
@@ -64,8 +65,11 @@ export default {
             }
             path.closePath();
             compoundPath.addChild(path);
+            this.$parent.currentCategory.createAnnotation();
+            currentAnnotation = this.$parent.currentAnnotation;
+            currentAnnotation.unite(compoundPath);
           }
-          currentAnnotation.unite(compoundPath);
+          // currentAnnotation.unite(compoundPath);
         })
         // .finally(() => points.forEach(point => point.remove()));
     },
@@ -98,6 +102,7 @@ export default {
             }
             path.closePath();
             compoundPath.addChild(path);
+            
           }
           currentAnnotation.unite(compoundPath);
         })
