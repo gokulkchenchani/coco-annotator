@@ -12,7 +12,7 @@ services:
   webserver:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.torch
     container_name: annotator_webclient
     restart: always
     ports:
@@ -21,6 +21,10 @@ services:
       - SECRET_KEY=RandomSecretKeyHere
       - FILE_WATCHER=true
       - NAME=Test Annotator
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_DEVICE_NUM=0
+      - TORCH_MASK_RCNN_FILE=/models/BONN_SweetPepper_Protected_2019.pth
+      - TORCH_MASK_RCNN_CLASSES=pepper
       - MASK_RCNN_FILE=/models/mask_rcnn_coco.h5
       - MASK_RCNN_CLASSES=
         BG,person,bicycle,car,motorcycle,airplane,
@@ -41,6 +45,8 @@ services:
     volumes:
       - "./datasets:/datasets"
       - "./models:/models"
+      - "./backend/webserver:/workspace/webserver"
+      - "./backend/config:/workspace/config"
     depends_on:
       - database
       - workers
@@ -50,7 +56,7 @@ services:
     container_name: annotator_workers
     build:
       context: .
-      dockerfile: ./backend/workers/Dockerfile
+      dockerfile: ./backend/workers/Dockerfile.torch
     volumes:
       - "./backend/config:/workspace/config"
       - "./backend/webserver:/workspace/webserver"
