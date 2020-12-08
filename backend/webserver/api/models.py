@@ -34,6 +34,8 @@ from ..util.exg import model as exgIndex
 from ..util.exgexr import model as exgexrIndex
 from ..util.cive import model as civeIndex
 
+from ..util.Max import model as Max
+
 api = Namespace('model', description='Model related operations')
 
 
@@ -103,6 +105,21 @@ class MaskRCNN(Resource):
         args = image_upload.parse_args()
         im = Image.open(args.get('image'))
         coco = maskrcnn.detect(im)
+        return {"coco": coco}
+
+@api.route('/max')
+class MaskRCNN(Resource):
+
+    @login_required
+    @api.expect(image_upload)
+    def post(self):
+        """ COCO data test """
+        if not MASKRCNN_LOADED:
+            return {"disabled": True, "coco": {}}
+
+        args = image_upload.parse_args()
+        im = Image.open(args.get('image'))
+        coco = Max.create_sub_mask_annotation(im)
         return {"coco": coco}
 
 
