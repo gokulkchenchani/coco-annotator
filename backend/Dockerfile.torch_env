@@ -82,4 +82,4 @@ RUN pip install -r requirements.txt && \
 RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get -y -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
-
+RUN apt-get install -y openssh-client

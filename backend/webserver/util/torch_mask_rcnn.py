@@ -4,6 +4,8 @@ import imantics as im
 
 import torch
 
+from agrobot_mrcnn.models import MaskrcnnSweetPepperProtected
+
 import logging
 logger = logging.getLogger('gunicorn.error')
 
@@ -11,7 +13,7 @@ logger = logging.getLogger('gunicorn.error')
 CUDA_DEVICE_NUM = AnnotatorConfig.CUDA_DEVICE_NUM
 
 MODEL_DIR = "/workspace/models"
-COCO_MODEL_PATH = AnnotatorConfig.TORCH_MASK_RCNN_FILE
+MODEL_PATH = AnnotatorConfig.TORCH_MASK_RCNN_FILE
 CLASS_NAMES = AnnotatorConfig.TORCH_MASK_RCNN_CLASSES.split(',')
 
 
@@ -30,11 +32,15 @@ class TorchMaskRCNN():
                 logger.info(f"[Torch] Using CUDA device ({CUDA_DEVICE_NUM})")
             except:
                 logger.info(f"[Torch] Unable find CUDA device ({CUDA_DEVICE_NUM}), using cpu instead")
-
-        logger.info(f"[Torch placeholders] Instanciating Torch MaskRCNN model: {COCO_MODEL_PATH}")
-        self.model = [0]
-
-        logger.info(f"[Torch placeholders] Try to load model")
+        try:
+            self.model = MaskrcnnSweetPepperProtected()
+            self.model.load_state_dict(torch.load(MODEL_PATH))
+            logger.info(f"[Torch] instanciated Torch MaskRCNN model: {MODEL_PATH}")
+            self.model.to(self.device)
+            logger.debug(f"[Torch] Sent model to device")
+        except:
+            logger.error(f"[Torch] Unable to initialize Torch model")
+            self.model = None
 
 
     def detect(self, image):
