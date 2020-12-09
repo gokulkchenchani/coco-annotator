@@ -17,6 +17,24 @@ RUN npm run build
 FROM agrobot/coco-annotator:torch-python-env
 
 WORKDIR /workspace/
+
+# Install Agrobot-pytorch-maskrcnn
+COPY ./scripts/keys/id_rsa_agrobot_maskrcnn /workspace/keys/
+RUN mkdir ~/.ssh \
+  && ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts \
+  && ssh-agent bash -c 'ssh-add /workspace/keys/id_rsa_agrobot_maskrcnn; \
+  git clone --single-branch --branch csmitt/installer_runtime_models \
+  git@github.com:Agricultural-Robotics-Bonn/agrobot-pytorch-mask-rcnn.git /tmp/agrobot-maskrcnn' \
+  && cd /tmp/agrobot-maskrcnn \
+  && pip3 install --upgrade pip \
+  && pip install -r requirements.txt \
+  && python setup.py install
+
+RUN cd /tmp/agrobot-maskrcnn \
+  && pip3 install --upgrade pip \
+  && cat requirements.txt | xargs -n 1 pip install --no-cache \
+  && python setup.py install
+
 COPY ./backend/ /workspace/
 COPY ./.git /workspace/.git
 RUN python set_path.py
