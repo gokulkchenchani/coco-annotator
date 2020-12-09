@@ -63,12 +63,12 @@
           ref="dextr"
         />
 
-        <FilterTool
+        <!-- <FilterTool
           v-model="activeTool"
           :scale="image.scale"
           @setcursor="setCursor"
           ref="filter"
-        />
+        /> -->
 
         
 
@@ -77,7 +77,9 @@
 
       <AnnotateButton :annotate-url="dataset.annotate_url" />
 
-      <MaxButton />
+      <MaxButton
+        ref="filter"
+      />
 
       <div v-show="mode == 'segment'">
         <CopyAnnotationsButton
@@ -117,6 +119,7 @@
         ref="filetitle"
       />
 
+      
       <div v-if="categories.length > 5">
         <div style="padding: 0px 5px">
           <input
@@ -172,10 +175,18 @@
         </div>
       </div>
 
+      <hr />
+      <div v-if="$refs.filter != null">
+        <FilterPanel 
+          :filter="$refs.filter"
+        />
+      </div>
+
       <div v-show="mode == 'segment'">
         <hr />
-        <h6 class="sidebar-title text-center">{{ activeTool }}</h6>
 
+        <h6 class="sidebar-title text-center">{{ activeTool }}</h6>
+        
         <div class="tool-section" style="max-height: 30%; color: lightgray">
           <div v-if="$refs.bbox != null">
             <BBoxPanel :bbox="$refs.bbox" />
@@ -212,16 +223,17 @@
             />
           </div>
 
-          <div v-if="$refs.filter != null">
+          <!-- <div v-if="$refs.filter != null">
             <FilterPanel
               :filter="$refs.filter"
             />
-          </div>
+          </div> -->
 
         </div>
       </div>
     </aside>
 
+    
     <div class="middle-panel" :style="{ cursor: cursor }">
     <v-touch @pinch="onpinch" @pinchstart="onpinchstart">
       <div id="frame" class="frame" @wheel="onwheel">
@@ -262,7 +274,7 @@ import EraserTool from "@/components/annotator/tools/EraserTool";
 import BrushTool from "@/components/annotator/tools/BrushTool";
 import KeypointTool from "@/components/annotator/tools/KeypointTool";
 import DEXTRTool from "@/components/annotator/tools/DEXTRTool";
-import FilterTool from "@/components/annotator/tools/FilterTool";
+// import FilterTool from "@/components/annotator/tools/FilterTool";
 
 import CopyAnnotationsButton from "@/components/annotator/tools/CopyAnnotationsButton";
 import CenterButton from "@/components/annotator/tools/CenterButton";
@@ -323,7 +335,7 @@ export default {
     MaxButton,
     DEXTRTool,
     DEXTRPanel,
-    FilterTool,
+    // FilterTool,
     FilterPanel
   },
   mixins: [toastrs, shortcuts],
