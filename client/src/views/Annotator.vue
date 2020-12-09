@@ -11,6 +11,8 @@
           @setcursor="setCursor"
           ref="select"
         />
+
+        
         <hr />
 
         <BBoxTool
@@ -68,10 +70,14 @@
           ref="filter"
         />
 
+        
+
       </div>
       <hr />
 
       <AnnotateButton :annotate-url="dataset.annotate_url" />
+
+      <MaxButton />
 
       <div v-show="mode == 'segment'">
         <CopyAnnotationsButton
@@ -269,6 +275,7 @@ import UndoButton from "@/components/annotator/tools/UndoButton";
 import ShowAllButton from "@/components/annotator/tools/ShowAllButton";
 import HideAllButton from "@/components/annotator/tools/HideAllButton";
 import AnnotateButton from "@/components/annotator/tools/AnnotateButton";
+import MaxButton from "@/components/annotator/tools/MaxButton";
 
 import PolygonPanel from "@/components/annotator/panels/PolygonPanel";
 import BBoxPanel from "@/components/annotator/panels/BBoxPanel";
@@ -313,6 +320,7 @@ export default {
     ShowAllButton,
     KeypointPanel,
     AnnotateButton,
+    MaxButton,
     DEXTRTool,
     DEXTRPanel,
     FilterTool,

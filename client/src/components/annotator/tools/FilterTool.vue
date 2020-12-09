@@ -18,78 +18,136 @@ export default {
       name: "Filter",
       cursor: "crosshair",
       settings: {
+        exg: false,
+        exgexr: false,
+        cive: false,
+        exg_padding: 50,
+        exg_threshold: 30,
+        exgexr_const: 1.4,
+        exgexr_threshold: 30,
         cive_r:  0.441,
         cive_g:  0.811,
         cive_b:  0.385,
-        cive_bias: 18.78745
-      },
+        cive_bias: 18.78745,
+        cive_threshold: 10
+      }
     };
   },
   methods: {
-    exg(){
-      let canvas = this.$parent.image.raster.canvas;
+    export() {
+      return {
+        exg: this.settings.exg
+      };
+    },
+    exg_apply() {
+    
+      let currentAnnotation = this.$parent.currentAnnotation;
+      let width = this.$parent.image.raster.width /2;
+      let height = this.$parent.image.raster.height /2;
 
-      let data = new FormData();
-      canvas.toBlob(blob => {
-        data.append("image", blob);
-        this.loading = true;
+      axios
+        .post(`/api/model/exg/${this.$parent.image.id}`, {
+          ...this.settings
+        })
+        .then(response => {
+          let segments = response.data.segmentaiton;
+          let center = new paper.Point(width, height);
 
-        axios
-          .post(`/api/model/exg/${this.$parent.image.id}`, {
-            ...this.settings
-          })
-          .then(response => {
-            let coco = response.data.coco || {};
+          let compoundPath = new paper.CompoundPath();
+          for (let i = 0; i < segments.length; i++) {
+            // segments.length
+            let polygon = segments[i];
+            let path = new paper.Path();
 
-            let images = coco.images || [];
-            let categories = coco.categories || [];
-            let annotations = coco.annotations || [];
-
-            if (
-              images.length == 0 ||
-              categories.length == 0 ||
-              annotations.length == 0
-            ) {
-              // Error
-              return;
+            for (let j = 0; j < polygon.length; j += 2) {
+              let point = new paper.Point(polygon[j], polygon[j + 1]);
+              path.add(point.subtract(center));
             }
-            // Index categoires
-            let indexedCategories = {};
-            categories.forEach(category => {
-              indexedCategories[category.id] = category;
-            });
-
-            annotations.forEach(annotation => {
-              let keypoints = annotation.keypoints || [];
-              let segmentation = annotation.segmentation || [];
-              let category = indexedCategories[annotation.category_id];
-              let isbbox = annotation.isbbox || false;
-
-              this.$parent.addAnnotation(
-                category.name,
-                segmentation,
-                keypoints,
-                isbbox=isbbox
-              );
-            });
-          })
-          .catch(() => {
-            this.axiosReqestError("Filter-Exg", "Could not run filter!!");
-          })
-          .finally(() => (this.loading = false));
-      });
+            path.closePath();
+            compoundPath.addChild(path);
+            this.$parent.currentCategory.createAnnotation();
+            currentAnnotation = this.$parent.currentAnnotation;
+            currentAnnotation.unite(compoundPath);
+          }
+          // currentAnnotation.unite(compoundPath);
+        })
+        // .finally(() => points.forEach(point => point.remove()));
     },
-    exgexr(){
-
+    exg_reset(){
+      this.settings.exg_padding = 50;
+      this.settings.exg_threshold = 30;
     },
-    cive(){
+    exgexr_apply() {
+    
+      let currentAnnotation = this.$parent.currentAnnotation;
+      let width = this.$parent.image.raster.width /2;
+      let height = this.$parent.image.raster.height /2;
 
+      axios
+        .post(`/api/model/exgexr/${this.$parent.image.id}`, {
+          ...this.settings
+        })
+        .then(response => {
+          let segments = response.data.segmentaiton;
+          let center = new paper.Point(width, height);
+
+          let compoundPath = new paper.CompoundPath();
+          for (let i = 0; i < segments.length; i++) {
+            let polygon = segments[i];
+            let path = new paper.Path();
+
+            for (let j = 0; j < polygon.length; j += 2) {
+              let point = new paper.Point(polygon[j], polygon[j + 1]);
+              path.add(point.subtract(center));
+            }
+            path.closePath();
+            compoundPath.addChild(path);
+            
+          }
+          currentAnnotation.unite(compoundPath);
+        })
+        // .finally(() => points.forEach(point => point.remove()));
+    },
+    exgexr_reset(){
+      this.settings.exgexr_const = 1.4;
+      this.settings.exgexr_threshold = 30;
+    },
+    cive_apply() {
+    
+      let currentAnnotation = this.$parent.currentAnnotation;
+      let width = this.$parent.image.raster.width /2;
+      let height = this.$parent.image.raster.height /2;
+
+      axios
+        .post(`/api/model/cive/${this.$parent.image.id}`, {
+          ...this.settings
+        })
+        .then(response => {
+          let segments = response.data.segmentaiton;
+          let center = new paper.Point(width, height);
+
+          let compoundPath = new paper.CompoundPath();
+          for (let i = 0; i < segments.length; i++) {
+            let polygon = segments[i];
+            let path = new paper.Path();
+
+            for (let j = 0; j < polygon.length; j += 2) {
+              let point = new paper.Point(polygon[j], polygon[j + 1]);
+              path.add(point.subtract(center));
+            }
+            path.closePath();
+            compoundPath.addChild(path);
+          }
+          currentAnnotation.unite(compoundPath);
+        })
+        // .finally(() => points.forEach(point => point.remove()));
     },
     cive_reset(){
       this.settings.cive_r = 0.4414;
       this.settings.cive_g = 0.811;
       this.settings.cive_b = 0.385;
       this.settings.cive_bias = 18.78745;
+      this.cive_threshold = 10
     }
   },
   computed: {
@@ -98,7 +156,7 @@ export default {
     }
   },
   watch: {
-    
+  
   }
 };
 </script>

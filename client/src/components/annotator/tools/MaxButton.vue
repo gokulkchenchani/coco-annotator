@@ -6,25 +6,14 @@ import axios from "axios";
 export default {
   name: "AnnotateButton",
   mixins: [button, toastrs],
-  props: {
-    annotateUrl: {
-      required: true,
-      type: [String, Number]
-    }
-  },
   data() {
     return {
-      icon: "fa-cloud-download",
-      cursor: "copy",
-      iconColor: "white",
-      disabled: true,
-      loading: false
+      name: "Max",
+      icon: "fa-filter",
     };
   },
   methods: {
     execute() {
-      if (!this.validUrl) return;
-
       let canvas = this.$parent.image.raster.canvas;
 
       let data = new FormData();
@@ -33,7 +22,7 @@ export default {
         this.loading = true;
 
         axios
-          .post(this.annotateUrl, data, {
+          .post(`/api/model/max`, data, {
             headers: {
               "Content-Type": "multipart/form-data"
             }
@@ -81,29 +70,29 @@ export default {
     }
   },
   computed: {
-    name() {
-      if (!this.validUrl) return "Annotate url is invalid";
-      return "Annotate Image";
-    },
-    validUrl() {
-      if (typeof this.annotateUrl === "number") return false;
-      return this.annotateUrl.length > 2;
-    }
+    // name() {
+    //   if (!this.validUrl) return "Annotate url is invalid";
+    //   return "Annotate Image";
+    // },
+    // validUrl() {
+    //   if (typeof this.annotateUrl === "number") return false;
+    //   return this.annotateUrl.length > 2;
+    // }
   },
   watch: {
-    loading() {
-      this.icon = this.loading ? "fa-spinner fa-spin" : "fa-cloud-download";
-    },
-    validUrl() {
-      this.disabled = !this.validUrl;
-    },
-    disabled() {
-      this.iconColor = this.disabled ? this.color.disabled : this.color.enabled;
-    }
+    // loading() {
+    //   this.icon = this.loading ? "fa-spinner fa-spin" : "fa-cloud-download";
+    // },
+    // validUrl() {
+    //   this.disabled = !this.validUrl;
+    // },
+    // disabled() {
+    //   this.iconColor = this.disabled ? this.color.disabled : this.color.enabled;
+    // }
   },
   created() {
-    this.iconColor = this.color.disabled;
-    this.disabled = !this.validUrl;
+    // this.iconColor = this.color.disabled;
+    // this.disabled = !this.validUrl;
   }
 };
 </script>
