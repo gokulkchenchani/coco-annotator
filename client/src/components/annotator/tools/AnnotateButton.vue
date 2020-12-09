@@ -44,7 +44,7 @@ export default {
             let images = coco.images || [];
             let categories = coco.categories || [];
             let annotations = coco.annotations || [];
-
+            
             if (
               images.length == 0 ||
               categories.length == 0 ||

@@ -30,9 +30,7 @@ if DEXTR_LOADED:
 else:
     logger.warning("DEXTR model is disabled.")
 
-from ..util.exg import model as exgIndex
-from ..util.exgexr import model as exgexrIndex
-from ..util.cive import model as civeIndex
+from ..util.vIndex import model as vIndex
 
 api = Namespace('model', description='Model related operations')
 
@@ -45,20 +43,23 @@ dextr_args.add_argument('points', location='json', type=list, required=True)
 dextr_args.add_argument('padding', location='json', type=int, default=50)
 dextr_args.add_argument('threshold', location='json', type=int, default=80)
 
-exg_args = reqparse.RequestParser()
-exg_args.add_argument('exg_padding', location='json', type=int, default=50)
-exg_args.add_argument('exg_threshold', location='json', type=int, default=30)
+filter_args = reqparse.RequestParser()
+filter_args.add_argument('min_area', location='json', type=int, default=50)
+filter_args.add_argument('filter_type', location='json', type=int, required=True)
 
-exgexr_args = reqparse.RequestParser()
-exgexr_args.add_argument('exgexr_const', location='json', type=float, default=1.4)
-exgexr_args.add_argument('exgexr_threshold', location='json', type=int, default=30)
+filter_args.add_argument('exg_padding', location='json', type=int, default=50)
+filter_args.add_argument('exg_threshold', location='json', type=int, default=30)
 
-cive_args = reqparse.RequestParser()
-cive_args.add_argument('cive_r', location='json', type=float, default=0.441)
-cive_args.add_argument('cive_g', location='json', type=float, default=0.811)
-cive_args.add_argument('cive_b', location='json', type=float, default=0.385)
-cive_args.add_argument('cive_bias', location='json', type=float, default=18.78745)
-cive_args.add_argument('cive_threshold', location='json', type=int, default=10)
+filter_args.add_argument('exgr_const', location='json', type=float, default=1.4)
+filter_args.add_argument('exgr_threshold', location='json', type=int, default=30)
+
+filter_args.add_argument('cive_r', location='json', type=float, default=0.441)
+filter_args.add_argument('cive_g', location='json', type=float, default=0.811)
+filter_args.add_argument('cive_b', location='json', type=float, default=0.385)
+filter_args.add_argument('cive_bias', location='json', type=float, default=18.78745)
+filter_args.add_argument('cive_threshold', location='json', type=int, default=10)
+
+# filter_args.add_argument('image', location='files', type=FileStorage, required=True, help='Image')
 
 @api.route('/dextr/<int:image_id>')
 class MaskRCNN(Resource):
@@ -105,79 +106,52 @@ class MaskRCNN(Resource):
         coco = maskrcnn.detect(im)
         return {"coco": coco}
 
-
-@api.route('/exg/<int:image_id>')
-class ExG(Resource):
-
-    @login_required
-    @api.expect(exg_args)
-
-    def post(self, image_id):
-
-        args = exg_args.parse_args()
-
-        padding = args.get('exg_padding')
-        threshold = args.get('exg_threshold')
-
-        image_model = ImageModel.objects(id=image_id).first()
-        if not image_model:
-            return {"message": "Invalid image ID"}, 400
-
-        image = Image.open(image_model.path)
-        result = exgIndex.predictMask(image, padding=padding, threshold=threshold)
-
-        return { "segmentaiton": Mask(result).polygons().segmentation }
-
-@api.route('/exgexr/<int:image_id>')
-class ExGExR(Resource):
+@api.route('/vindex/<int:image_id>')
+class vindex(Resource):
 
     @login_required
-    @api.expect(exgexr_args)
+    @api.expect(filter_args)
+    
     def post(self, image_id):
 
-        args = exgexr_args.parse_args()
+        args = filter_args.parse_args()
 
-        const = args.get('exgexr_const')
-        threshold = args.get('exgexr_threshold')
+        print(args, flush=True)
+        
+        # image = Image.open(args.get('image'))
 
-        image_model = ImageModel.objects(id=image_id).first()
-        if not image_model:
-            return {"message": "Invalid image ID"}, 400
+        filter_type = args.get('filter_type')
+        min_area = args.get('min_area')
+        exg_threshold = args.get('exg_threshold')
 
-        image = Image.open(image_model.path)
-        result = exgexrIndex.predictMask(image, const=const, threshold=threshold)
-
-        return { "segmentaiton": Mask(result).polygons().segmentation }
-
-@api.route('/cive/<int:image_id>')
-class CIVE(Resource):
-
-    @login_required
-    @api.expect(cive_args)
-    def post(self, image_id):
-
-        args = cive_args.parse_args()
+        exgr_const = args.get('exgr_const')
+        exgr_threshold = args.get('exgr_threshold')
 
         cive_r = args.get('cive_r')
         cive_g = args.get('cive_g')
         cive_b = args.get('cive_b')
         cive_bias = args.get('cive_bias')
-        threshold = args.get('cive_threshold')
+        cive_threshold = args.get('cive_threshold')
+
 
         image_model = ImageModel.objects(id=image_id).first()
         if not image_model:
             return {"message": "Invalid image ID"}, 400
 
         image = Image.open(image_model.path)
-        result = civeIndex.predictMask(image, 
+
+
+        coco = vIndex.predictMask(image,filter_type=filter_type,
+                                        min_area=min_area,
+                                        exg_threshold=exg_threshold,
+                                        exgr_const=exgr_const,  
+                                        exgr_threshold=exgr_threshold,
                                         cive_r=cive_r,
                                         cive_g=cive_g,
                                         cive_b=cive_b,
                                         cive_bias=cive_bias,
-                                        threshold=threshold)
-
-        return { "segmentaiton": Mask(result).polygons().segmentation }
-
+                                        cive_threshold=cive_threshold)
+        return {"coco": coco}
 
 @api.route('/torch_maskrcnn')
 class MaskRCNN(Resource):

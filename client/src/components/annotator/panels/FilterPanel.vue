@@ -1,12 +1,12 @@
 <template>
-  <div v-show="filter.isActive">
-    <PanelToggle name="ExG" v-model="filter.settings.exg" />
-    <PanelInputNumber v-show="filter.settings.exg" name="Padding"
+  <div>
+    <PanelInputNumber  name="Min Area"
       min="0"
-      max="1000"
-      step="2"
-      v-model="filter.settings.exg_padding"
+      max="10000"
+      step="1"
+      v-model="filter.settings.min_area"
     />
+    <PanelToggle name="ExG" v-model="filter.settings.exg" />
     <PanelInputNumber v-show="filter.settings.exg" name="Threshold"
       min="0"
       max="255"
@@ -25,13 +25,13 @@
       min="0"
       max="10"
       step="0.001"
-      v-model="filter.settings.exgexr_const"
+      v-model="filter.settings.exgr_const"
     />
     <PanelInputNumber v-show="filter.settings.exgexr" name="Threshold"
       min="0"
       max="255"
       step="1"
-      v-model="filter.settings.exgexr_threshold"
+      v-model="filter.settings.exgr_threshold"
     />
     <PanelButton v-show="filter.settings.exgexr" name="Apply" 
       @click="filter.exgexr_apply" />

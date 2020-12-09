@@ -56,7 +56,7 @@ class MaskRCNN():
         result = self.model.detect([image])[0]
         masks = result.get('masks')
         class_ids = result.get('class_ids')
-        print("class_ids:", class_ids, type(masks), masks.size, type(result), flush=True)
+        # print("class_ids:", class_ids, type(masks), masks.size, result, flush=True)
         coco_image = im.Image(width=width, height=height)
         print("coco_image:", coco_image, flush=True)
         for i in range(masks.shape[-1]):
