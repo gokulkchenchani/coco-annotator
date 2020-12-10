@@ -24,7 +24,7 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
       - CUDA_DEVICE_NUM=0
       - TORCH_MASK_RCNN_FILE=/models/BONN_SweetPepper_Protected_2019.pth
-      - TORCH_MASK_RCNN_CLASSES=pepper
+      - TORCH_MASK_RCNN_CLASSES=BG,pepper
       - MASK_RCNN_FILE=/models/mask_rcnn_coco.h5
       - MASK_RCNN_CLASSES=
         BG,person,bicycle,car,motorcycle,airplane,

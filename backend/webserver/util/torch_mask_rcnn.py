@@ -1,9 +1,8 @@
 from config import Config as AnnotatorConfig
-from skimage.transform import resize
 import imantics as im
 
 import torch
-
+import torchvision.transforms as transforms
 from agrobot_mrcnn.models import MaskrcnnSweetPepperProtected
 
 import logging
@@ -35,6 +34,7 @@ class TorchMaskRCNN():
         try:
             self.model = MaskrcnnSweetPepperProtected()
             self.model.load_state_dict(torch.load(MODEL_PATH))
+            self.model.eval()
             logger.info(f"[Torch] instanciated Torch MaskRCNN model: {MODEL_PATH}")
             self.model.to(self.device)
             logger.debug(f"[Torch] Sent model to device")
@@ -42,20 +42,37 @@ class TorchMaskRCNN():
             logger.error(f"[Torch] Unable to initialize Torch model")
             self.model = None
 
-
+    @torch.no_grad()
     def detect(self, image):
 
         if self.model is None:
             return {}
 
-        logger.info(f"[Torch placeholders] Image preprocesing")
-
-        logger.info(f"[Torch placeholders] Detecting instances")
-
-        logger.info(f"[Torch placeholders] convert to coco format")
-
+        logger.info(f"[Torch] Image preprocesing")
         width, height = image.size
-        return im.Image(width=width, height=height).coco()
+        image = image.convert('RGB')
+        # Send image to compute device
+        image = transforms.ToTensor()(image).to(self.device)
+        torch.cuda.synchronize()
+
+        logger.info(f"[Torch] Detecting instances")
+        outputs = self.model([image])
+        # Put results in cpu and get masks and labels
+        outputs = [{k: v.to('cpu') for k, v in t.items()} for t in outputs]
+        masks = torch.squeeze(outputs[0]['masks'])
+        class_ids = torch.squeeze(outputs[0]['labels'])
+
+        logger.info(f"[Torch] convert to coco format")
+        coco_image = im.Image(width=width, height=height)
+        for i in range(masks.shape[0]):
+            binary_mask = masks[i].numpy()
+            binary_mask[binary_mask < 0.9] = 0.
+            mask = im.Mask(binary_mask)
+            class_name = 'pepper'
+            category = im.Category(CLASS_NAMES[class_ids[i]])
+            coco_image.add(mask, category=category)
+
+        return coco_image.coco()
 
 
 model = TorchMaskRCNN()
