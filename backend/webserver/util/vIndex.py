@@ -56,10 +56,12 @@ class vIndex():
 
     def detectObjects(self, msk, category="unknow"):
         polys = im.Mask(msk).polygons()
+        print(polys, flush=True)
         points = [
                 np.array(point).reshape(-1, 2).round().astype(int)
                 for point in polys
             ]
+        
         coco_image = im.Image(width=self.width, height=self.height)
         for i in range(len(points)):
             mask = np.zeros((self.height, self.width))
@@ -72,6 +74,17 @@ class vIndex():
             else:
                 print("Area < thershold!! -> not included ")
         return coco_image
+
+    def getCoco(self, mask):
+        coco_image = self.detectObjects(mask)
+        return {"coco": coco_image.coco()}
+    
+
+    def getPolys(self, mask):
+        polys = im.Mask(mask).polygons()
+        print("polygons:", polys, flush=True)
+        return {"polys": polys}
+    
 
     def predictMask(self, image, filter_type=0,
                                 min_area=100,
@@ -98,7 +111,7 @@ class vIndex():
 
         image = image.convert('RGB')
         self.r, self.g, self.b = image.split()
-        print(self.r, self.g, self.b,flush=True)
+        # print(self.r, self.g, self.b, flush=True)
         self.width, self.height = image.size
         # print(image.getbands(), flush=True)
         
@@ -115,8 +128,6 @@ class vIndex():
             print("Invalid filter Type!!!", flush=True)
             return
 
-        coco_image = self.detectObjects(msk)
-
-        return coco_image.coco()
+        return msk
 
 model = vIndex()

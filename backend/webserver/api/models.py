@@ -106,6 +106,7 @@ class MaskRCNN(Resource):
         coco = maskrcnn.detect(im)
         return {"coco": coco}
 
+
 @api.route('/vindex/<int:image_id>')
 class vindex(Resource):
 
@@ -115,10 +116,7 @@ class vindex(Resource):
     def post(self, image_id):
 
         args = filter_args.parse_args()
-
         print(args, flush=True)
-        
-        # image = Image.open(args.get('image'))
 
         filter_type = args.get('filter_type')
         min_area = args.get('min_area')
@@ -133,15 +131,13 @@ class vindex(Resource):
         cive_bias = args.get('cive_bias')
         cive_threshold = args.get('cive_threshold')
 
-
         image_model = ImageModel.objects(id=image_id).first()
         if not image_model:
             return {"message": "Invalid image ID"}, 400
 
         image = Image.open(image_model.path)
 
-
-        coco = vIndex.predictMask(image,filter_type=filter_type,
+        coco = vIndex.getCoco(vIndex.predictMask(image,filter_type=filter_type,
                                         min_area=min_area,
                                         exg_threshold=exg_threshold,
                                         exgr_const=exgr_const,  
@@ -150,8 +146,51 @@ class vindex(Resource):
                                         cive_g=cive_g,
                                         cive_b=cive_b,
                                         cive_bias=cive_bias,
-                                        cive_threshold=cive_threshold)
-        return {"coco": coco}
+                                        cive_threshold=cive_threshold))
+        return coco
+
+@api.route('/vindex/fbox/<int:image_id>')
+class vindex(Resource):
+
+    @login_required
+    @api.expect(filter_args)
+    
+    def post(self, image_id):
+
+        print("Heree..... 1", flush=True)
+
+        # args = filter_args.parse_args()
+
+        print("Heree..... 11", flush=True)
+
+        # print(args, flush=True)
+        
+        # image = Image.open(args.get('image'))
+
+        # filter_type = args.get('filter_type')
+        # min_area = args.get('min_area')
+        # exg_threshold = args.get('exg_threshold')
+
+        # exgr_const = args.get('exgr_const')
+        # exgr_threshold = args.get('exgr_threshold')
+
+        # cive_r = args.get('cive_r')
+        # cive_g = args.get('cive_g')
+        # cive_b = args.get('cive_b')
+        # cive_bias = args.get('cive_bias')
+        # cive_threshold = args.get('cive_threshold')
+
+
+        # print("Heree..... 2", filter_type, min_area, exg_threshold, flush=True)
+
+
+        image_model = ImageModel.objects(id=image_id).first()
+        if not image_model:
+            return {"message": "Invalid image ID"}, 400
+
+        image = Image.open(image_model.path)
+        polys = vIndex.getPolys(vIndex.predictMask(image))
+        return 
 
 @api.route('/torch_maskrcnn')
 class MaskRCNN(Resource):

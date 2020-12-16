@@ -28,7 +28,7 @@ export default {
   methods: {
     exg_apply() {
       this.settings.filter_type = 0;
-      this.apply(0);
+      this.apply();
     },
     exg_reset(){
       this.settings.exg_threshold = 35;
@@ -155,7 +155,7 @@ export default {
     //       .finally(() => (this.loading = false));
     //   });
     // }
-  }
+    }
   }
 };
 </script>
