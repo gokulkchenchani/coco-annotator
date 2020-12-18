@@ -23,7 +23,7 @@ COPY ./scripts/keys/id_rsa_agrobot_maskrcnn /workspace/keys/
 RUN mkdir ~/.ssh \
   && ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts \
   && ssh-agent bash -c 'ssh-add /workspace/keys/id_rsa_agrobot_maskrcnn; \
-  git clone --single-branch --branch csmitt/installer_runtime_models \
+  git clone --depth 1 --branch 0.1 \
   git@github.com:Agricultural-Robotics-Bonn/agrobot-pytorch-mask-rcnn.git /tmp/agrobot-maskrcnn' \
   && cd /tmp/agrobot-maskrcnn \
   && pip3 install --upgrade pip \
