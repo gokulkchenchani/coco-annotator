@@ -94,3 +94,19 @@ services:
     command: "mongod --smallfiles --logpath=/dev/null"
     networks:
       - cocoannotator
+  backup:
+    build:
+      context: ./mongo_backup
+      dockerfile: ./Dockerfile
+    container_name: annotator_backup
+    volumes:
+      - /tmp/backup:/backup
+    depends_on:
+      - database
+    environment:
+      - MONGO_HOST="database"
+      - MONGO_PORT=27017
+      - CRON_TIME=1 16 * * *
+      - OPTS='--oplog --gzip'
+    networks:
+    - cocoannotator
