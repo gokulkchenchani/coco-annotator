@@ -30,7 +30,7 @@ export default {
         minDistance: 2,
         path: null,
         guidance: true,
-        simplify: 1,
+        simplify: 0,
         pathOptions: {
           strokeColor: "black",
           strokeWidth: 1

@@ -74,6 +74,13 @@
           ref="fbox"
         />
 
+        <TorchBoxTool
+          v-model="activeTool"
+          :scale="image.scale"
+          @setcursor="setCursor"
+          ref="torchbox"
+        />
+
         <!-- <FilterTool
           v-model="activeTool"
           :scale="image.scale"
@@ -208,6 +215,10 @@
             <FBoxPanel :fbox="$refs.fbox" />
           </div>
 
+          <div v-if="$refs.torchbox != null">
+            <TorchBoxPanel :torchbox="$refs.torchbox" />
+          </div>
+
           <div v-if="$refs.polygon != null">
             <PolygonPanel :polygon="$refs.polygon" />
           </div>
@@ -295,6 +306,10 @@ import DEXTRTool from "@/components/annotator/tools/DEXTRTool";
 // import FilterTool from "@/components/annotator/tools/FilterTool";
 import FBoxPanel from "@/components/annotator/panels/FBoxPanel";
 import FBoxTool from "@/components/annotator/tools/FBoxTool";
+
+import TorchBoxPanel from "@/components/annotator/panels/TorchBoxPanel";
+import TorchBoxTool from "@/components/annotator/tools/TorchBoxTool";
+
 import MaxButton from "@/components/annotator/tools/MaxButton";
 import FilterPanel from "@/components/annotator/panels/FilterPanel";
 
@@ -332,8 +347,10 @@ export default {
     CLabel: Label,
     BBoxTool,
     FBoxTool,
+    TorchBoxTool,
     BBoxPanel,
     FBoxPanel,
+    TorchBoxPanel,
     PolygonTool,
     PolygonPanel,
     SelectTool,
@@ -377,7 +394,7 @@ export default {
       zoom: 0.2,
       cursor: "move",
       mode: "segment",
-      simplify: 1,
+      simplify: 0,
       panels: {
         show: {
           left: true,

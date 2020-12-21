@@ -43,21 +43,9 @@ dextr_args.add_argument('points', location='json', type=list, required=True)
 dextr_args.add_argument('padding', location='json', type=int, default=50)
 dextr_args.add_argument('threshold', location='json', type=int, default=80)
 
-filter_args = reqparse.RequestParser()
-filter_args.add_argument('min_area', location='json', type=int, default=50)
-filter_args.add_argument('filter_type', location='json', type=int, required=True)
 
-filter_args.add_argument('exg_padding', location='json', type=int, default=50)
-filter_args.add_argument('exg_threshold', location='json', type=int, default=30)
 
-filter_args.add_argument('exgr_const', location='json', type=float, default=1.4)
-filter_args.add_argument('exgr_threshold', location='json', type=int, default=30)
 
-filter_args.add_argument('cive_r', location='json', type=float, default=0.441)
-filter_args.add_argument('cive_g', location='json', type=float, default=0.811)
-filter_args.add_argument('cive_b', location='json', type=float, default=0.385)
-filter_args.add_argument('cive_bias', location='json', type=float, default=18.78745)
-filter_args.add_argument('cive_threshold', location='json', type=int, default=10)
 
 # filter_args.add_argument('image', location='files', type=FileStorage, required=True, help='Image')
 
@@ -104,8 +92,23 @@ class MaskRCNN(Resource):
         args = image_upload.parse_args()
         im = Image.open(args.get('image'))
         coco = maskrcnn.detect(im)
-        return {"coco": coco}
+        return coco
 
+filter_args = reqparse.RequestParser()
+filter_args.add_argument('min_area', location='json', type=int, default=50)
+filter_args.add_argument('filter_type', location='json', type=int, required=True)
+
+filter_args.add_argument('exg_padding', location='json', type=int, default=50)
+filter_args.add_argument('exg_threshold', location='json', type=int, default=30)
+
+filter_args.add_argument('exgr_const', location='json', type=float, default=1.4)
+filter_args.add_argument('exgr_threshold', location='json', type=int, default=30)
+
+filter_args.add_argument('cive_r', location='json', type=float, default=0.441)
+filter_args.add_argument('cive_g', location='json', type=float, default=0.811)
+filter_args.add_argument('cive_b', location='json', type=float, default=0.385)
+filter_args.add_argument('cive_bias', location='json', type=float, default=18.78745)
+filter_args.add_argument('cive_threshold', location='json', type=int, default=10)
 
 @api.route('/vindex/<int:image_id>')
 class vindex(Resource):
@@ -116,7 +119,7 @@ class vindex(Resource):
     def post(self, image_id):
 
         args = filter_args.parse_args()
-        print(args, flush=True)
+        # print(args, flush=True)
 
         filter_type = args.get('filter_type')
         min_area = args.get('min_area')
@@ -136,8 +139,7 @@ class vindex(Resource):
             return {"message": "Invalid image ID"}, 400
 
         image = Image.open(image_model.path)
-
-        coco = vIndex.getCoco(vIndex.predictMask(image,filter_type=filter_type,
+        mask = vIndex.predictMask(image,filter_type=filter_type,
                                         min_area=min_area,
                                         exg_threshold=exg_threshold,
                                         exgr_const=exgr_const,  
@@ -146,42 +148,89 @@ class vindex(Resource):
                                         cive_g=cive_g,
                                         cive_b=cive_b,
                                         cive_bias=cive_bias,
-                                        cive_threshold=cive_threshold))
+                                        cive_threshold=cive_threshold)
+        coco = vIndex.getCoco(vIndex.getPolys(mask))
         return coco
 
-@api.route('/vindex/fbox/<int:image_id>')
-class vindex(Resource):
+
+fbox_args = reqparse.RequestParser()
+fbox_args.add_argument('points', location='json',type=list, required=True)
+fbox_args.add_argument('min_area', location='json', type=int, default=50)
+fbox_args.add_argument('filter_type', location='json', type=int, required=True)
+
+fbox_args.add_argument('exg_padding', location='json', type=int, default=50)
+fbox_args.add_argument('exg_threshold', location='json', type=int, default=30)
+
+fbox_args.add_argument('exgr_const', location='json', type=float, default=1.4)
+fbox_args.add_argument('exgr_threshold', location='json', type=int, default=30)
+
+fbox_args.add_argument('cive_r', location='json', type=float, default=0.441)
+fbox_args.add_argument('cive_g', location='json', type=float, default=0.811)
+fbox_args.add_argument('cive_b', location='json', type=float, default=0.385)
+fbox_args.add_argument('cive_bias', location='json', type=float, default=18.78745)
+fbox_args.add_argument('cive_threshold', location='json', type=int, default=10)
+
+
+@api.route('/fbox/<int:image_id>')
+class fbox(Resource):
 
     @login_required
-    @api.expect(filter_args)
+    @api.expect(fbox_args)
     
     def post(self, image_id):
 
-        print("Heree..... 1", flush=True)
-
-        # args = filter_args.parse_args()
-
-        print("Heree..... 11", flush=True)
-
-        # print(args, flush=True)
+        args = fbox_args.parse_args()
+        # print(args.get('points'), flush=True)
         
-        # image = Image.open(args.get('image'))
+        points = args.get('points')
+        filter_type = args.get('filter_type')
+        min_area = args.get('min_area')
+        exg_threshold = args.get('exg_threshold')
 
-        # filter_type = args.get('filter_type')
-        # min_area = args.get('min_area')
-        # exg_threshold = args.get('exg_threshold')
+        exgr_const = args.get('exgr_const')
+        exgr_threshold = args.get('exgr_threshold')
 
-        # exgr_const = args.get('exgr_const')
-        # exgr_threshold = args.get('exgr_threshold')
+        cive_r = args.get('cive_r')
+        cive_g = args.get('cive_g')
+        cive_b = args.get('cive_b')
+        cive_bias = args.get('cive_bias')
+        cive_threshold = args.get('cive_threshold')
 
-        # cive_r = args.get('cive_r')
-        # cive_g = args.get('cive_g')
-        # cive_b = args.get('cive_b')
-        # cive_bias = args.get('cive_bias')
-        # cive_threshold = args.get('cive_threshold')
+        image_model = ImageModel.objects(id=image_id).first()
+        if not image_model:
+            return {"message": "Invalid image ID"}, 400
+
+        image = Image.open(image_model.path)
+        mask = vIndex.predictMask(image,filter_type=filter_type,
+                                        min_area=min_area,
+                                        exg_threshold=exg_threshold,
+                                        exgr_const=exgr_const,  
+                                        exgr_threshold=exgr_threshold,
+                                        cive_r=cive_r,
+                                        cive_g=cive_g,
+                                        cive_b=cive_b,
+                                        cive_bias=cive_bias,
+                                        cive_threshold=cive_threshold)
+        pickedPoly = vIndex.pickPoly(mask, points)
+        coco = vIndex.getCoco(pickedPoly)
+        return coco
 
 
-        # print("Heree..... 2", filter_type, min_area, exg_threshold, flush=True)
+torchbox_args = reqparse.RequestParser()
+torchbox_args.add_argument('points', location='json',type=list, required=True)
+
+@api.route('/torchbox/<int:image_id>')
+class torchbox(Resource):
+
+    @login_required
+    @api.expect(torchbox_args)
+    
+    def post(self, image_id):
+
+        args = torchbox_args.parse_args()
+        # print(args.get('points'), flush=True)
+        
+        points = args.get('points')
 
 
         image_model = ImageModel.objects(id=image_id).first()
@@ -189,8 +238,9 @@ class vindex(Resource):
             return {"message": "Invalid image ID"}, 400
 
         image = Image.open(image_model.path)
-        polys = vIndex.getPolys(vIndex.predictMask(image))
-        return 
+
+        coco = {"coco": None}
+        return coco
 
 @api.route('/torch_maskrcnn')
 class MaskRCNN(Resource):

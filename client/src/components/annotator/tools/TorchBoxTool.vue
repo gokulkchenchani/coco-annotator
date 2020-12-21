@@ -14,7 +14,7 @@ import axios from "axios";
 import { vIndex } from "@/libs/vindex";
 
 export default {
-  name: "FBoxTool",
+  name: "TrochBoxTool",
   mixins: [tool, toastrs],
   props: {
     scale: {
@@ -29,7 +29,7 @@ export default {
   data() {
     return {
       icon: "fa-hand-pointer-o",
-      name: "FBox",
+      name: "Torchbox",
       scaleFactor: 3,
       cursor: "copy",
       bbox: null,
@@ -71,21 +71,21 @@ export default {
       this.color.auto = pref.auto || this.color.auto;
       this.color.radius = pref.radius || this.color.radius;
     },
-    createFBox(event) {
+    createTrochBox(event) {
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
-      this.fbox = new BBox(event.point);
-      this.fbox.getPoints().forEach(point => this.polygon.path.add(point));
+      this.trochbox = new BBox(event.point);
+      this.trochbox.getPoints().forEach(point => this.polygon.path.add(point));
     },
 
-    modifyFBox(event) {
+    modifyTrochBox(event) {
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
-      this.fbox.modifyPoint(event.point);
-      this.fbox.getPoints().forEach(point => this.polygon.path.add(point));
+      this.trochbox.modifyPoint(event.point);
+      this.trochbox.getPoints().forEach(point => this.polygon.path.add(point));
     },
     /**
      * Frees current bbox
      */
-    deleteFbox() {
+    deleteTorchbox() {
       if (this.polygon.path == null) return;
 
       this.polygon.path.remove();
@@ -121,21 +121,21 @@ export default {
         this.$parent.currentCategory.createAnnotation();
       }
       if (this.polygon.path == null) {
-        this.createFBox(event);
+        this.createTrochBox(event);
         return;
       }
-      this.removeLastFBox();
-      this.modifyFBox(event);
+      this.removeLastTrochBox();
+      this.modifyTrochBox(event);
 
-      if (this.completeFBox()) return;
+      if (this.completeTrochBox()) return;
     },
     onMouseMove(event) {
       if (this.polygon.path == null) return;
       if (this.polygon.path.segments.length === 0) return;
       this.autoStrokeColor(event.point);
 
-      this.removeLastFBox();
-      this.modifyFBox(event);
+      this.removeLastTrochBox();
+      this.modifyTrochBox(event);
     },
     /**
      * Undo points
@@ -152,13 +152,13 @@ export default {
      * Closes current polygon and unites it with current annotaiton.
      * @returns {boolean} sucessfully closes object
      */
-    completeFBox() {
+    completeTrochBox() {
       if (this.polygon.path == null) return false;
 
       this.polygon.path.fillColor = "black";
       this.polygon.path.closePath();
 
-      let points = this.fbox.getPoints();
+      let points = this.trochbox.getPoints();
 
       this.apply(points)
       this.$parent.uniteCurrentAnnotation(this.polygon.path, true, true, true);
@@ -174,24 +174,14 @@ export default {
 
       return true;
     },
-    removeLastFBox() {
+    removeLastTrochBox() {
       this.polygon.path.removeSegments();
     },
     apply(points) {
       console.log(points)
       axios
-        .post(`/api/model/fbox/${this.$parent.image.id}`, {
-          points: points,
-          filter_type: 1,
-          min_area: 50,
-          exg_threshold: 30,
-          exgr_const: 1.4,
-          exgr_threshold: 30,
-          cive_r:  0.441,
-          cive_g:  0.811,
-          cive_b:  0.3855,
-          cive_bias: 18.78745,
-          cive_threshold: 10
+        .post(`/api/model/trochbox/${this.$parent.image.id}`, {
+          points: points
         })
         .then(response => {
           let coco = response.data.coco || {};
