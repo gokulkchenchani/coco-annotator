@@ -1,12 +1,15 @@
 #!/bin/bash
-source /env.sh
+if [ -f "/env.sh" ]
+then
+  source /env.sh
+fi
 OPTS="--gzip"
 DATE=$(date +%Y.%m.%d.%H.%M)
 OUTPUT=/backup/$MONGO_HOST-$DATE.archive.gz
 
-if [ ! -z "$OPTS" ]
+if [ ! -z "$BACKUP_OPTS" ]
 then
-  OPTS="$OPTS"
+  OPTS="$BACKUP_OPTS"
 fi
 
 if [ ! -z "$MONGO_USER" ]

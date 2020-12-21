@@ -13,7 +13,8 @@ then
   echo "export MONGO_USER=$MONGO_USER" >> $CRONENV
   echo "export MONGO_PASS=$MONGO_PASS" >> $CRONENV
   echo "export MAX_BACKUPS=$MAX_BACKUPS" >> $CRONENV
-  echo "export OPTS=$OPTS" >> $CRONENV
+  echo "export BACKUP_OPTS=$BACKUP_OPTS" >> $CRONENV
+  echo "export RESTORE_OPTS=$RESTORE_OPTS" >> $CRONENV
   echo "${CRON_TIME} /backup.sh >> /backup.log 2>&1" > $CRONJOB
   chmod 600 $CRONJOB
   crontab $CRONJOB
