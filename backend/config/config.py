@@ -44,6 +44,7 @@ class Config:
 
     MAX_CONTENT_LENGTH = os.getenv("MAX_CONTENT_LENGTH", 1 * 1024 * 1024 * 1024)  # 1GB
     MONGODB_HOST = os.getenv("MONGODB_HOST", "mongodb://database/flask")
+    MONGODB_REPLICASET_NAME = os.getenv("MONGODB_REPLICASET_NAME", "")
     SECRET_KEY = os.getenv("SECRET_KEY", "<--- CHANGE THIS KEY --->")
 
     LOG_LEVEL = 'debug'

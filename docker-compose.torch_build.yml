@@ -22,6 +22,7 @@ services:
     ports:
       - "5000:5000"
     environment:
+      - MONGODB_REPLICASET_NAME=rs0
       - SECRET_KEY=RandomSecretKeyHere
       - FILE_WATCHER=true
       - NAME=Test Annotator
@@ -50,6 +51,7 @@ services:
       - "./datasets:/datasets"
       - "./models:/models"
       - "./backend/webserver:/workspace/webserver"
+      - "./backend/database:/workspace/database"
       - "./backend/config:/workspace/config"
     depends_on:
       - database
@@ -130,6 +132,8 @@ services:
     entrypoint: [ "mongod","--smallfiles","--logpath=/dev/null","--port","27027", "--bind_ip_all",   "--replSet", "rs0" ]
     networks:
       - cocoannotator
+    depends_on:
+      - database
 
   database_r2:
     container_name: annotator_mongodb_r2
