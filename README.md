@@ -4,7 +4,7 @@ Bonn Agricultural Robotics Annotation tool forked from [jsbroks' COCO-Annotator]
 
 This adds multiple features to make agrigultural related annotation easier.
 
-# AgRobot-COCO-Annotator additional features
+## AgRobot-COCO-Annotator additional features
 
 - Most common agricultural related image filters (**ExG**, **ExGExR**, **CIVE**)
 - PyTorch support
@@ -12,7 +12,7 @@ This adds multiple features to make agrigultural related annotation easier.
 - Cofigurable auto-backup of the annotation database and simple recovery tools
 - Default high resolution annotation polygons
 
-# COCO-Annotator original features
+## COCO-Annotator original features
 
 - Directly export to COCO format
 - Segmentation of objects
@@ -29,6 +29,9 @@ This adds multiple features to make agrigultural related annotation easier.
 
 For examples and more information check out the [wiki](https://github.com/jsbroks/coco-annotator/wiki).
 
+## install
+
+## Auto-Backup configuration and recovery
 
 # More info in the original repo:
 
