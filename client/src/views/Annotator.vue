@@ -22,6 +22,8 @@
           ref="bbox"
         />
 
+        
+
         <PolygonTool
           v-model="activeTool"
           :scale="image.scale"
@@ -63,6 +65,22 @@
           ref="dextr"
         />
 
+        <hr />
+
+        <FBoxTool
+          v-model="activeTool"
+          :scale="image.scale"
+          @setcursor="setCursor"
+          ref="fbox"
+        />
+
+        <TorchBoxTool
+          v-model="activeTool"
+          :scale="image.scale"
+          @setcursor="setCursor"
+          ref="torchbox"
+        />
+
         <!-- <FilterTool
           v-model="activeTool"
           :scale="image.scale"
@@ -79,6 +97,7 @@
 
       <MaxButton
         ref="filter"
+
       />
 
       <div v-show="mode == 'segment'">
@@ -191,6 +210,15 @@
           <div v-if="$refs.bbox != null">
             <BBoxPanel :bbox="$refs.bbox" />
           </div>
+
+          <div v-if="$refs.fbox != null">
+            <FBoxPanel :fbox="$refs.fbox" />
+          </div>
+
+          <div v-if="$refs.torchbox != null">
+            <TorchBoxPanel :torchbox="$refs.torchbox" />
+          </div>
+
           <div v-if="$refs.polygon != null">
             <PolygonPanel :polygon="$refs.polygon" />
           </div>
@@ -274,7 +302,16 @@ import EraserTool from "@/components/annotator/tools/EraserTool";
 import BrushTool from "@/components/annotator/tools/BrushTool";
 import KeypointTool from "@/components/annotator/tools/KeypointTool";
 import DEXTRTool from "@/components/annotator/tools/DEXTRTool";
+
 // import FilterTool from "@/components/annotator/tools/FilterTool";
+import FBoxPanel from "@/components/annotator/panels/FBoxPanel";
+import FBoxTool from "@/components/annotator/tools/FBoxTool";
+
+import TorchBoxPanel from "@/components/annotator/panels/TorchBoxPanel";
+import TorchBoxTool from "@/components/annotator/tools/TorchBoxTool";
+
+import MaxButton from "@/components/annotator/tools/MaxButton";
+import FilterPanel from "@/components/annotator/panels/FilterPanel";
 
 import CopyAnnotationsButton from "@/components/annotator/tools/CopyAnnotationsButton";
 import CenterButton from "@/components/annotator/tools/CenterButton";
@@ -287,7 +324,7 @@ import UndoButton from "@/components/annotator/tools/UndoButton";
 import ShowAllButton from "@/components/annotator/tools/ShowAllButton";
 import HideAllButton from "@/components/annotator/tools/HideAllButton";
 import AnnotateButton from "@/components/annotator/tools/AnnotateButton";
-import MaxButton from "@/components/annotator/tools/MaxButton";
+
 
 import PolygonPanel from "@/components/annotator/panels/PolygonPanel";
 import BBoxPanel from "@/components/annotator/panels/BBoxPanel";
@@ -297,7 +334,7 @@ import BrushPanel from "@/components/annotator/panels/BrushPanel";
 import EraserPanel from "@/components/annotator/panels/EraserPanel";
 import KeypointPanel from "@/components/annotator/panels/KeypointPanel";
 import DEXTRPanel from "@/components/annotator/panels/DEXTRPanel";
-import FilterPanel from "@/components/annotator/panels/FilterPanel";
+
 
 import { mapMutations } from "vuex";
 
@@ -309,7 +346,11 @@ export default {
     Category,
     CLabel: Label,
     BBoxTool,
+    FBoxTool,
+    TorchBoxTool,
     BBoxPanel,
+    FBoxPanel,
+    TorchBoxPanel,
     PolygonTool,
     PolygonPanel,
     SelectTool,
@@ -353,7 +394,7 @@ export default {
       zoom: 0.2,
       cursor: "move",
       mode: "segment",
-      simplify: 1,
+      simplify: 0,
       panels: {
         show: {
           left: true,

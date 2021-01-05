@@ -1,4 +1,5 @@
 from mongoengine import connect
+from pymongo import MongoClient
 from config import Config
 
 from .annotations import *
@@ -17,7 +18,12 @@ import json
 def connect_mongo(name, host=None):
     if host is None:
         host = Config.MONGODB_HOST
-    connect(name, host=host)
+    client = MongoClient(host)
+    if Config.MONGODB_REPLICASET_NAME:
+        connect(name, host=host, replicaset=Config.MONGODB_REPLICASET_NAME)
+    else:
+        connect(name, host=host)
+
 
 
 # https://github.com/MongoEngine/mongoengine/issues/1171

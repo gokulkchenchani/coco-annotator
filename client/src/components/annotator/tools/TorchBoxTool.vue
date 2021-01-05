@@ -4,33 +4,38 @@ import tool from "@/mixins/toolBar/tool";
 import UndoAction from "@/undo";
 
 import { invertColor } from "@/libs/colors";
+import { BBox } from "@/libs/bbox";
+import { Point } from "@/libs/bbox";
 import { mapMutations } from "vuex";
 
+import toastrs from "@/mixins/toastrs";
+import axios from "axios";
+
+import { vIndex } from "@/libs/vindex";
+
 export default {
-  name: "PolygonTool",
-  mixins: [tool],
+  name: "TrochBoxTool",
+  mixins: [tool, toastrs],
   props: {
     scale: {
       type: Number,
       default: 1
     },
     settings: {
-      type: [Object, null],
-      default: null
+        type: [Object, null],
+        default: null
     }
   },
   data() {
     return {
-      icon: "fa-pencil",
-      name: "Polygon",
+      icon: "fa-hand-pointer-o",
+      name: "Torchbox",
       scaleFactor: 3,
       cursor: "copy",
+      bbox: null,
       polygon: {
-        completeDistance: 5,
-        minDistance: 2,
         path: null,
         guidance: true,
-        simplify: 0,
         pathOptions: {
           strokeColor: "black",
           strokeWidth: 1
@@ -54,39 +59,33 @@ export default {
     ...mapMutations(["addUndo", "removeUndos"]),
     export() {
       return {
-        guidance: this.polygon.guidance,
         completeDistance: this.polygon.completeDistance,
         minDistance: this.polygon.minDistance,
         blackOrWhite: this.color.blackOrWhite,
         auto: this.color.auto,
-        radius: this.color.radius
+        radius: this.color.radius,
       };
     },
     setPreferences(pref) {
-      this.polygon.guidance = pref.guidance || this.polygon.guidance;
-      this.polygon.completeDistance =
-        pref.completeDistance || this.polygon.completeDistance;
-      this.polygon.minDistance = pref.minDistance || this.polygon.minDistance;
       this.color.blackOrWhite = pref.blackOrWhite || this.color.blackOrWhite;
       this.color.auto = pref.auto || this.color.auto;
       this.color.radius = pref.radius || this.color.radius;
     },
-    /**
-     * Creates a new selection polygon path
-     */
-    createPolygon() {
-      if (this.color.auto) {
-        this.color.circle = new paper.Path.Circle(
-          new paper.Point(0, 0),
-          this.color.radius
-        );
-      }
+    createTrochBox(event) {
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
+      this.trochbox = new BBox(event.point);
+      this.trochbox.getPoints().forEach(point => this.polygon.path.add(point));
+    },
+
+    modifyTrochBox(event) {
+      this.polygon.path = new paper.Path(this.polygon.pathOptions);
+      this.trochbox.modifyPoint(event.point);
+      this.trochbox.getPoints().forEach(point => this.polygon.path.add(point));
     },
     /**
-     * Frees current polygon
+     * Frees current bbox
      */
-    deletePolygon() {
+    deleteTorchbox() {
       if (this.polygon.path == null) return;
 
       this.polygon.path.remove();
@@ -111,48 +110,32 @@ export default {
         );
       }
     },
-    onMouseDrag(event) {
-      if (this.polygon.path == null) return;
-      this.actionPoints++;
-      this.autoStrokeColor(event.point);
-      this.polygon.path.add(event.point);
-      this.autoComplete(30);
+    checkAnnotationExist() {
+      return (
+        !!this.$parent.currentAnnotation &&
+        !!this.$parent.currentAnnotation.annotation.paper_object.length
+      );
     },
     onMouseDown(event) {
-      let wasNull = false;
-      if (this.polygon.path == null) {
-        wasNull = true;
-        this.createPolygon();
+      if (this.polygon.path == null && this.checkAnnotationExist()) {
+        this.$parent.currentCategory.createAnnotation();
       }
+      if (this.polygon.path == null) {
+        this.createTrochBox(event);
+        return;
+      }
+      this.removeLastTrochBox();
+      this.modifyTrochBox(event);
 
-      this.actionPoints = 1;
-      this.polygon.path.add(event.point);
-
-      if (this.autoComplete(3)) return;
-
-      if (this.polygon.guidance && wasNull) this.polygon.path.add(event.point);
-    },
-    onMouseUp() {
-      if (this.polygon.path == null) return;
-      let action = new UndoAction({
-        name: this.name,
-        action: this.actionTypes.ADD_POINTS,
-        func: this.undoPoints,
-        args: {
-          points: this.actionPoints
-        }
-      });
-
-      this.addUndo(action);
+      if (this.completeTrochBox()) return;
     },
     onMouseMove(event) {
       if (this.polygon.path == null) return;
       if (this.polygon.path.segments.length === 0) return;
       this.autoStrokeColor(event.point);
 
-      if (!this.polygon.guidance) return;
-      this.removeLastPoint();
-      this.polygon.path.add(event.point);
+      this.removeLastTrochBox();
+      this.modifyTrochBox(event);
     },
     /**
      * Undo points
@@ -163,43 +146,22 @@ export default {
       let points = args.points;
       let length = this.polygon.path.segments.length;
 
-      if (this.polygon.guidance) {
-        length -= 1;
-      }
-
       this.polygon.path.removeSegments(length - points, length);
-    },
-    /**
-     * Completes polygon if point being added is close to first point
-     * @returns {boolean} sucessfully closes object
-     */
-    autoComplete(minCompleteLength) {
-      if (this.polygon.path == null) return false;
-      if (this.polygon.path.segments.length < minCompleteLength) return false;
-
-      let last = this.polygon.path.lastSegment.point;
-      let first = this.polygon.path.firstSegment.point;
-
-      let completeDistance = this.polygon.completeDistance;
-      if (last.isClose(first, completeDistance)) {
-        return this.complete();
-      }
-
-      return false;
     },
     /**
      * Closes current polygon and unites it with current annotaiton.
      * @returns {boolean} sucessfully closes object
      */
-    complete() {
+    completeTrochBox() {
       if (this.polygon.path == null) return false;
-
-      this.removeLastPoint();
 
       this.polygon.path.fillColor = "black";
       this.polygon.path.closePath();
 
-      this.$parent.uniteCurrentAnnotation(this.polygon.path);
+      let points = this.trochbox.getPoints();
+
+      this.apply(points)
+      this.$parent.uniteCurrentAnnotation(this.polygon.path, true, true, true);
 
       this.polygon.path.remove();
       this.polygon.path = null;
@@ -209,10 +171,57 @@ export default {
       }
 
       this.removeUndos(this.actionTypes.ADD_POINTS);
+
       return true;
     },
-    removeLastPoint() {
-      this.polygon.path.removeSegment(this.polygon.path.segments.length - 1);
+    removeLastTrochBox() {
+      this.polygon.path.removeSegments();
+    },
+    apply(points) {
+      console.log(points)
+      axios
+        .post(`/api/model/trochbox/${this.$parent.image.id}`, {
+          points: points
+        })
+        .then(response => {
+          let coco = response.data.coco || {};
+
+          let images = coco.images || [];
+          let categories = coco.categories || [];
+          let annotations = coco.annotations || [];
+          
+          if (
+            images.length == 0 ||
+            categories.length == 0 ||
+            annotations.length == 0
+          ) {
+            // Error
+            return;
+          }
+          // Index categoires
+          let indexedCategories = {};
+          categories.forEach(category => {
+            indexedCategories[category.id] = category;
+          });
+
+          annotations.forEach(annotation => {
+            let keypoints = annotation.keypoints || [];
+            let segmentation = annotation.segmentation || [];
+            let category = indexedCategories[annotation.category_id];
+            let isbbox = annotation.isbbox || false;
+
+            this.$parent.addAnnotation(
+              category.name,
+              segmentation,
+              keypoints,
+              isbbox=isbbox
+            );
+          });
+        })
+        .catch(() => {
+          this.axiosReqestError("Annotator", "Could not read data from URL");
+        })
+        .finally(() => (this.loading = false));
     }
   },
   computed: {
@@ -235,19 +244,6 @@ export default {
       if (this.polygon.path != null)
         this.polygon.path.strokeWidth = newScale * this.scaleFactor;
     },
-    /**
-     * Remove last point (point were mouse was) if enable guidane
-     */
-    "polygon.guidance"(guidance) {
-      if (this.polygon.path == null) return;
-
-      if (!guidance && this.polygon.path.length > 1) {
-        this.removeLastPoint();
-      }
-    },
-    "polygon.minDistance"(newDistance) {
-      this.tool.minDistance = newDistance;
-    },
     "polygon.pathOptions.strokeColor"(newColor) {
       if (this.polygon.path == null) return;
 
@@ -255,9 +251,9 @@ export default {
     },
     "color.auto"(value) {
       if (value && this.polygon.path) {
-        this.color.circle = new paper.Path.Circle(
+        this.color.circle = new paper.Path.Rectangle(
           new paper.Point(0, 0),
-          this.color.radius
+          new paper.Size(10, 10)
         );
       }
       if (!value && this.color.circle) {
@@ -267,8 +263,6 @@ export default {
     }
   },
   created() {},
-  mounted() {
-    this.tool.minDistance = this.minDistance;
-  }
+  mounted() {}
 };
 </script>

@@ -77,7 +77,7 @@
             color: 'white'
           }"
         >
-          <span> {{ kp.label }} </span> 
+          <span> {{ kp.label }} </span>
         </a>
         <i
           v-if="kp.visibility !== 0"
@@ -123,7 +123,7 @@
                 <label class="col-sm-3 col-form-label">Visibility</label>
                 <div class="col-sm-8">
                   <select v-model="keypoint.visibility" class="form-control">
-                    <option v-for="(desc, label) in visibilityOptions" 
+                    <option v-for="(desc, label) in visibilityOptions"
                       :key="label" :value="label" :selected="keypoint.visibility == label">{{desc}}</option>
                   </select>
                 </div>
@@ -275,7 +275,7 @@ export default {
     },
     simplify: {
       type: Number,
-      default: 1
+      default: 0
     },
     keypointEdges: {
       type: Array,
@@ -574,7 +574,7 @@ export default {
         radius: this.scale * 6,
         onClick: event => {
           if (!["Select", "Keypoints"].includes(this.activeTool)) return;
-          
+
           let keypoint = event.target.keypoint;
           // Remove if already selected
           if (keypoint == this.currentKeypoint) {
@@ -623,7 +623,7 @@ export default {
 
       this.keypoints.addKeypoint(keypoint);
       this.isEmpty = this.compoundPath.isEmpty() && this.keypoints.isEmpty();
-      
+
       let unusedLabels = this.notUsedKeypointLabels;
       delete unusedLabels[String(label)];
       let unusedLabelKeys = Object.keys(unusedLabels);
@@ -661,7 +661,7 @@ export default {
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
       newCompound.onClick = this.compoundPath.onClick;
       this.annotation.isbbox = isBBox;
-      
+
       if (undoable) this.createUndoAction("Unite");
 
       this.compoundPath.remove();
@@ -800,14 +800,14 @@ export default {
     activeTool(tool) {
       if (this.isCurrent) {
         this.session.tools.push(tool);
-      
+
         if (tool === "Keypoints") {
           if (!this.showKeypoints) {
             this.showKeypoints = true;
           }
           var labelIndex = -1;
           for(let i=0; i < this.keypointLabels.length; ++i) {
-            
+
             if (this.isKeypointLabeled(i)) {
               if (labelIndex < 0) {
                 labelIndex = i;

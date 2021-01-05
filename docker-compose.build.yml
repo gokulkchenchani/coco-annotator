@@ -1,4 +1,12 @@
-version: "3"
+version: "3.4"
+
+volumes:
+  mongodb_data:
+    external: false
+  mongodb_data_r1:
+    external: false
+  mongodb_data_r2:
+    external: false
 
 volumes:
   mongodb_data:
@@ -74,17 +82,79 @@ services:
       - 5672:5672
     networks:
       - cocoannotator
+
+
   database:
-    image: mongo:4.0
     container_name: annotator_mongodb
+    image: mongo:4.0
+    ports:
+      - 27017:27017
     restart: always
     environment:
       - MONGO_DATA_DIR=/data/db
       - MONGO_LOG_DIR=/dev/null
     volumes:
       - "mongodb_data:/data/db"
-    ports:
-      - "27017:27017"
-    command: "mongod --smallfiles --logpath=/dev/null"
+    entrypoint: [ "mongod","--smallfiles","--logpath=/dev/null","--port","27017", "--bind_ip_all",   "--replSet", "rs0" ]
     networks:
       - cocoannotator
+
+  database_r1:
+    container_name: annotator_mongodb_r1
+    image: mongo:4.0
+    ports:
+      - 27027:27027
+    restart: always
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - "mongodb_data_r1:/data/db"
+    entrypoint: [ "mongod","--smallfiles","--logpath=/dev/null","--port","27027", "--bind_ip_all",   "--replSet", "rs0" ]
+    networks:
+      - cocoannotator
+    depends_on:
+      - database
+
+  database_r2:
+    container_name: annotator_mongodb_r2
+    image: mongo:4.0
+    ports:
+      - 27037:27037
+    restart: always
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - "mongodb_data_r2:/data/db"
+    entrypoint: [ "mongod","--smallfiles","--logpath=/dev/null","--port","27037", "--bind_ip_all",   "--replSet", "rs0" ]
+    healthcheck:
+      test: ["CMD","mongo","--host","database","--port","27017",  "--eval", 'rs.initiate( { _id : "rs0",members: [{ _id: 0,     host: "database:27017" },{ _id: 1, host: "database_r1:27027" },{   _id: 2, host: "database_r2:27037" }   ]})']
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - cocoannotator
+    depends_on:
+      - database
+      - database_r1
+
+  backup:
+    build:
+      context: ./mongo_backup
+      dockerfile: ./Dockerfile
+    container_name: annotator_backup
+    volumes:
+      - /tmp/backup:/backup
+    depends_on:
+      - database
+    environment:
+      - MONGO_HOST=database
+      - MONGO_PORT=27017
+      - CRON_TIME=0 */3 * * *
+      - BACKUP_OPTS="--oplog --gzip"
+      - RESTORE_OPTS="--drop --oplogReplay --gzip"
+    networks:
+    - cocoannotator
+
