@@ -2,14 +2,14 @@
 
 Bonn Agricultural Robotics Annotation tool forked from [jsbroks' COCO-Annotator](https://github.com/jsbroks/coco-annotator).
 
-This adds multiple features to make agrigultural related annotation easier.
+This adds multiple features to make agricultural related annotation easier.
 
 ## AgRobot-COCO-Annotator additional features
 
 - Most common agricultural related image filters (**ExG**, **ExGExR**, **CIVE**)
 - PyTorch support
 - Run PyTorch Mask-RCNN on images to produce annotations
-- Cofigurable auto-backup of the annotation database and simple recovery tools
+- Configurable auto-backup of the annotation database and simple recovery tools
 - Default high resolution annotation polygons
 
 ## COCO-Annotator original features
@@ -31,7 +31,34 @@ For examples and more information check out the [wiki](https://github.com/jsbrok
 
 ## install
 
-## Auto-Backup configuration and recovery
+## Database Auto-Backup configuration and recovery
+
+Database auto-backup only works if the servers database is running a replica set.
+
+The replica set and backup scheme are configured in the server's `docker-compose` file.
+
+**For now, the only `docker-compose` file with this features is `docker-compose.torch_build.yml`**.
+
+### Auto-Backup configuration
+To change the auto-backup settings, edit the `backup` service entry on the `docker-compose` file you intend to run.
+
+The most relevant settings you can change are:
+- Backup path:
+```
+  volumes:
+    - [server_backup_path_here]:/backup
+```
+- Backup frequency (in [crontab format](https://crontab.guru/))
+```
+  environment:
+    - CRON_TIME=[crontab_backup_frequency_here]
+```
+
+### Database Backup recovery
+
+With the annotation server running, run the following command on the server machine:
+
+``` docker exec annotator_backup /restore.sh [path_to_backups]_database-[backup_timestamp].archive.gz ```
 
 # More info in the original repo:
 
