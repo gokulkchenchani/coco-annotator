@@ -197,7 +197,7 @@ export default {
     },
     simplify: {
       type: Number,
-      default: 1
+      default: 0
     },
     activeTool: {
       type: String,
@@ -379,7 +379,7 @@ export default {
       let indices = {
         annotation: index,
         category: this.index,
-        keypoint: -1 
+        keypoint: -1
       };
       this.selectedAnnotation = index;
       this.showAnnotations = true;
