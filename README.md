@@ -29,7 +29,24 @@ This adds multiple features to make agricultural related annotation easier.
 
 For examples and more information check out the [wiki](https://github.com/jsbroks/coco-annotator/wiki).
 
-## install
+## Install & Run server with PyTorch and CUDA support
+In order to run PyTorch models on GPU, `nvidia docker runitime utilities` must be installed and configured on the server machine before running the annotation server.
+
+### Run install script
+```[path_to_repo]/scripts/install.sh```
+
+This script will:
+- Install `nvidia docker runitime utilities`
+- Build a `python3` environment with `torch` and `cuDNN` support as a `docker` container
+- Generate deploy keys and save them in `/scripts/keys`, which [need to be added](https://docs.github.com/en/free-pro-team@latest/developers/overview/managing-deploy-keys) to any repositories you want to use (for now only `Agricultural-Robotics-Bonn/agrobot-pytorch-mask-rcnn`)
+
+### Run server with PyTorch and CUDA support
+After installing and adding the depoly `ssh-key` to your repos, run the server with the following commands:
+
+```
+cd [path_to_annotator_repo]
+sudo docker-compose -f docker-compose.torch_build.yml up --build
+```
 
 ## Database Auto-Backup configuration and recovery
 
@@ -37,28 +54,36 @@ Database auto-backup only works if the servers database is running a replica set
 
 The replica set and backup scheme are configured in the server's `docker-compose` file.
 
-**For now, the only `docker-compose` file with this features is `docker-compose.torch_build.yml`**.
+Files supporting this are:
+- **`docker-compose.build.yml`**
+- **`docker-compose.torch_build.yml`**.
 
 ### Auto-Backup configuration
 To change the auto-backup settings, edit the `backup` service entry on the `docker-compose` file you intend to run.
 
 The most relevant settings you can change are:
 - Backup path:
+
 ```
   volumes:
     - [server_backup_path_here]:/backup
 ```
+
 - Backup frequency (in [crontab format](https://crontab.guru/))
+
 ```
   environment:
     - CRON_TIME=[crontab_backup_frequency_here]
 ```
 
 ### Database Backup recovery
+List the names of available backup files:
 
-With the annotation server running, run the following command on the server machine:
+```ls [server_backup_path_here]```
 
-``` docker exec annotator_backup /restore.sh [path_to_backups]_database-[backup_timestamp].archive.gz ```
+With the annotation server running, run the following command on the server machine to restore the derired backup:
+
+``` docker exec annotator_backup /restore.sh /backup/database-[backup_timestamp].archive.gz ```
 
 # More info in the original repo:
 
