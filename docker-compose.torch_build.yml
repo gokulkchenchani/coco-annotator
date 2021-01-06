@@ -165,13 +165,13 @@ services:
       dockerfile: ./Dockerfile
     container_name: annotator_backup
     volumes:
-      - /tmp/backup:/backup
+      - /data4/annotator_backups:/backup
     depends_on:
       - database
     environment:
       - MONGO_HOST=database
       - MONGO_PORT=27017
-      - CRON_TIME=* * * * *
+      - CRON_TIME=0 */3 * * *
       - BACKUP_OPTS="--oplog --gzip"
       - RESTORE_OPTS="--drop --oplogReplay --gzip"
     networks:
