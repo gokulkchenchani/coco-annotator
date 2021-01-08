@@ -6,7 +6,10 @@ from config import Config
 from PIL import Image
 from database import ImageModel
 
+import imantics as im
+
 import os
+import math
 import logging
 
 logger = logging.getLogger('gunicorn.error')
@@ -50,7 +53,7 @@ dextr_args.add_argument('threshold', location='json', type=int, default=80)
 # filter_args.add_argument('image', location='files', type=FileStorage, required=True, help='Image')
 
 @api.route('/dextr/<int:image_id>')
-class MaskRCNN(Resource):
+class Dextr(Resource):
 
     @login_required
     @api.expect(dextr_args)
@@ -115,7 +118,7 @@ class vindex(Resource):
 
     @login_required
     @api.expect(filter_args)
-    
+
     def post(self, image_id):
 
         args = filter_args.parse_args()
@@ -142,7 +145,7 @@ class vindex(Resource):
         mask = vIndex.predictMask(image,filter_type=filter_type,
                                         min_area=min_area,
                                         exg_threshold=exg_threshold,
-                                        exgr_const=exgr_const,  
+                                        exgr_const=exgr_const,
                                         exgr_threshold=exgr_threshold,
                                         cive_r=cive_r,
                                         cive_g=cive_g,
@@ -176,12 +179,12 @@ class fbox(Resource):
 
     @login_required
     @api.expect(fbox_args)
-    
+
     def post(self, image_id):
 
         args = fbox_args.parse_args()
         # print(args.get('points'), flush=True)
-        
+
         points = args.get('points')
         filter_type = args.get('filter_type')
         min_area = args.get('min_area')
@@ -204,7 +207,7 @@ class fbox(Resource):
         mask = vIndex.predictMask(image,filter_type=filter_type,
                                         min_area=min_area,
                                         exg_threshold=exg_threshold,
-                                        exgr_const=exgr_const,  
+                                        exgr_const=exgr_const,
                                         exgr_threshold=exgr_threshold,
                                         cive_r=cive_r,
                                         cive_g=cive_g,
@@ -224,32 +227,51 @@ class torchbox(Resource):
 
     @login_required
     @api.expect(torchbox_args)
-    
+
     def post(self, image_id):
+        if not TORCHMASKRCNN_LOADED:
+            logger.warning("No torch_mrcnn model loaded.")
+            return {"disabled": True, "coco": {}}
 
         args = torchbox_args.parse_args()
-        # print(args.get('points'), flush=True)
-        
+        # image centered coordinate system
         points = args.get('points')
-
 
         image_model = ImageModel.objects(id=image_id).first()
         if not image_model:
             return {"message": "Invalid image ID"}, 400
 
         image = Image.open(image_model.path)
+        width, height = image.size
+        image = image.convert('RGB')
 
-        coco = {"coco": None}
-        return coco
+        # Detection box coordinates to extreme pixels
+        b_xs = [max(min(p['x'] + width/2, width), 0) for p in points]
+        b_ys = [max(min(p['y'] + height/2, height), 0) for p in points]
+        crop_box = (math.ceil(min(b_xs)),   # left limit
+                    math.ceil(min(b_ys)),   # top limit
+                    math.floor(max(b_xs)),   # right limit
+                    math.floor(max(b_ys)))   # bottom limit
+
+        # Entered box outside of the image canvas
+        if crop_box[0] == crop_box[2] or crop_box[1] == crop_box[3]:
+            logger.warning("Invaid box for detection given.")
+            return im.Image(width=0, height=0).coco()
+
+        coco = torch_maskrcnn.detect_in_box(image, crop_box)
+        return {"coco": coco}
+        # coco = {"coco": None}
+        # return coco
 
 @api.route('/torch_maskrcnn')
-class MaskRCNN(Resource):
+class TorchMaskRCNN(Resource):
 
     @login_required
     @api.expect(image_upload)
     def post(self):
         """ COCO data test """
         if not TORCHMASKRCNN_LOADED:
+            logger.warning("No torch_mrcnn model loaded.")
             return {"disabled": True, "coco": {}}
 
         args = image_upload.parse_args()
