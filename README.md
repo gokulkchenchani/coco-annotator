@@ -96,6 +96,7 @@ related terminal output:
 annotator_message_q | 2021-01-11 10:07:06.578 [error] <0.29064.2> closing AMQP connection <0.29064.2> (172.23.0.7:46456 -> 172.23.0.2:5672):
 annotator_message_q | missed heartbeats from client, timeout: 60s
 ```
+- Re-Projection based label propagation
 
 # More info in the original repo:
 
