@@ -90,7 +90,12 @@ With the annotation server running, run the following command on the server mach
 - Remove bbox used by box based detectors from instance list (e.g.: `torchbox`)
 - `Agrobot-MaskRCNN` has poor performance when used with `torchbox` in small bounding boxes.
 - Increase DEXTR detection mask's resolution (if possible)
-- Fix: After images stay open for a long time, the annotator becomes slow and crashes. When that image is re-opened, all instance masks are missing but are still listed on the right pannel. If the image gets saved, all annotations for that Image get lost.
+- Fix: Sometimes the annotator becomes slow and crashes. When that image is re-opened, all instance masks are missing but are still listed on the right pannel. If the image gets saved, all annotations for that Image get lost.
+related terminal output:
+```
+annotator_message_q | 2021-01-11 10:07:06.578 [error] <0.29064.2> closing AMQP connection <0.29064.2> (172.23.0.7:46456 -> 172.23.0.2:5672):
+annotator_message_q | missed heartbeats from client, timeout: 60s
+```
 
 # More info in the original repo:
 
