@@ -85,6 +85,13 @@ With the annotation server running, run the following command on the server mach
 
 ``` docker exec annotator_backup /restore.sh /backup/database-[backup_timestamp].archive.gz ```
 
+## TODOs:
+- Automate `Agrobot-MaskRCNN` download when building docker images. 
+- Remove bbox used by box based detectors from instance list (e.g.: `torchbox`)
+- `Agrobot-MaskRCNN` has poor performance when used with `torchbox` in small bounding boxes.
+- Increase DEXTR detection mask's resolution (if possible)
+- Fix: After images stay open for a long time, the annotator becomes slow and crashes. When that image is re-opened, all instance masks are missing but are still listed on the right pannel. If the image gets saved, all annotations for that Image get lost.
+
 # More info in the original repo:
 
 <p align="center"><img src="https://i.imgur.com/AA7IdbQ.png"></p>
