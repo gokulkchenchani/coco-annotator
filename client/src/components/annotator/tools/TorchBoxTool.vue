@@ -14,7 +14,7 @@ import axios from "axios";
 import { vIndex } from "@/libs/vindex";
 
 export default {
-  name: "TrochBoxTool",
+  name: "TorchBoxTool",
   mixins: [tool, toastrs],
   props: {
     scale: {
@@ -71,16 +71,16 @@ export default {
       this.color.auto = pref.auto || this.color.auto;
       this.color.radius = pref.radius || this.color.radius;
     },
-    createTrochBox(event) {
+    createTorchBox(event) {
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
-      this.trochbox = new BBox(event.point);
-      this.trochbox.getPoints().forEach(point => this.polygon.path.add(point));
+      this.torchbox = new BBox(event.point);
+      this.torchbox.getPoints().forEach(point => this.polygon.path.add(point));
     },
 
-    modifyTrochBox(event) {
+    modifyTorchBox(event) {
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
-      this.trochbox.modifyPoint(event.point);
-      this.trochbox.getPoints().forEach(point => this.polygon.path.add(point));
+      this.torchbox.modifyPoint(event.point);
+      this.torchbox.getPoints().forEach(point => this.polygon.path.add(point));
     },
     /**
      * Frees current bbox
@@ -121,21 +121,21 @@ export default {
         this.$parent.currentCategory.createAnnotation();
       }
       if (this.polygon.path == null) {
-        this.createTrochBox(event);
+        this.createTorchBox(event);
         return;
       }
-      this.removeLastTrochBox();
-      this.modifyTrochBox(event);
+      this.removeLastTorchBox();
+      this.modifyTorchBox(event);
 
-      if (this.completeTrochBox()) return;
+      if (this.completeTorchBox()) return;
     },
     onMouseMove(event) {
       if (this.polygon.path == null) return;
       if (this.polygon.path.segments.length === 0) return;
       this.autoStrokeColor(event.point);
 
-      this.removeLastTrochBox();
-      this.modifyTrochBox(event);
+      this.removeLastTorchBox();
+      this.modifyTorchBox(event);
     },
     /**
      * Undo points
@@ -152,13 +152,13 @@ export default {
      * Closes current polygon and unites it with current annotaiton.
      * @returns {boolean} sucessfully closes object
      */
-    completeTrochBox() {
+    completeTorchBox() {
       if (this.polygon.path == null) return false;
 
       this.polygon.path.fillColor = "black";
       this.polygon.path.closePath();
 
-      let points = this.trochbox.getPoints();
+      let points = this.torchbox.getPoints();
 
       this.apply(points)
       this.$parent.uniteCurrentAnnotation(this.polygon.path, true, true, true);
@@ -174,13 +174,13 @@ export default {
 
       return true;
     },
-    removeLastTrochBox() {
+    removeLastTorchBox() {
       this.polygon.path.removeSegments();
     },
     apply(points) {
       console.log(points)
       axios
-        .post(`/api/model/trochbox/${this.$parent.image.id}`, {
+        .post(`/api/model/torchbox/${this.$parent.image.id}`, {
           points: points
         })
         .then(response => {
@@ -189,7 +189,7 @@ export default {
           let images = coco.images || [];
           let categories = coco.categories || [];
           let annotations = coco.annotations || [];
-          
+
           if (
             images.length == 0 ||
             categories.length == 0 ||

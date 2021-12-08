@@ -1,6 +1,6 @@
 <template>
   <div v-show="torchbox.isActive">
-    <PanelButton name="Delete TrochBox" @click="torchbox.deleteTorchbox" />
+    <PanelButton name="Delete TorchBox" @click="torchbox.deleteTorchbox" />
     <PanelToggle name="Auto Select Color" v-model="torchbox.color.auto" />
     <PanelToggle
       v-show="torchbox.color.auto"
@@ -21,7 +21,7 @@ import PanelInputString from "@/components/PanelInputString";
 import PanelInputNumber from "@/components/PanelInputNumber";
 
 export default {
-  name: "TrochBoxPanel",
+  name: "TorchBoxPanel",
   components: { PanelButton, PanelToggle, PanelInputString, PanelInputNumber },
   props: {
     torchbox: {

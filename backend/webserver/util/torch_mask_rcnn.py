@@ -1,6 +1,8 @@
 from config import Config as AnnotatorConfig
 import imantics as im
 
+import math
+import numpy as np
 import torch
 import torchvision.transforms as transforms
 from agrobot_mrcnn.models import MaskrcnnSweetPepperProtected
@@ -59,20 +61,65 @@ class TorchMaskRCNN():
         outputs = self.model([image])
         # Put results in cpu and get masks and labels
         outputs = [{k: v.to('cpu') for k, v in t.items()} for t in outputs]
-        masks = torch.squeeze(outputs[0]['masks'])
+
         class_ids = torch.squeeze(outputs[0]['labels'])
+        masks = torch.squeeze(outputs[0]['masks']).numpy()
+        # Threshhold masks
+        masks[masks < 0.9] = 0.
+
+        return TorchMaskRCNN.to_coco(masks, class_ids)
+
+    @torch.no_grad()
+    def detect_in_box(self, image, cropbox):
+
+        if self.model is None:
+            return {}
+
+
+        logger.info(f"[Torch] Image preprocesing")
+        width, height = image.size
+        b_left, b_top, b_right, b_bottom = cropbox
+        crop_image = image.convert('RGB').crop(cropbox)
+
+
+        # Send image to compute device
+        crop_image = transforms.ToTensor()(crop_image).to(self.device)
+        torch.cuda.synchronize()
+
+        logger.info(f"[Torch] Detecting instances")
+        outputs = self.model([crop_image])
+        # Put results in cpu and get masks and labels
+        outputs = [{k: v.to('cpu') for k, v in t.items()} for t in outputs]
+
+        class_ids = torch.squeeze(outputs[0]['labels'])
+        crop_masks = torch.squeeze(outputs[0]['masks']).numpy()
+        # Threshhold masks
+        crop_masks[crop_masks < 0.9] = 0.
+
+        masks = np.zeros((crop_masks.shape[0],height,width))
+
+        for i in range(masks.shape[0]):
+            masks[i] = np.pad(crop_masks[i],
+                                ( (b_top, height - b_bottom), # (top, bottom) padding
+                                  (b_left, width - b_right)),# (left, right) padding
+                                   'constant', constant_values=(0.))
+
+        return TorchMaskRCNN.to_coco(masks, class_ids)
+
+    @staticmethod
+    def to_coco(masks, class_ids):
+        if masks.shape[0] != len(class_ids) or \
+           masks.shape[0] == 0:
+
+           logger.info(f"[Torch] no instances detected")
+           return im.Image(width=0, height=0).coco()
 
         logger.info(f"[Torch] convert to coco format")
-        coco_image = im.Image(width=width, height=height)
+        coco_image = im.Image(width=masks[0].shape[1], height=masks[0].shape[0])
         for i in range(masks.shape[0]):
-            binary_mask = masks[i].numpy()
-            binary_mask[binary_mask < 0.9] = 0.
-            mask = im.Mask(binary_mask)
-            class_name = 'pepper'
             category = im.Category(CLASS_NAMES[class_ids[i]])
-            coco_image.add(mask, category=category)
+            coco_image.add(im.Mask(masks[i]), category=category)
 
         return coco_image.coco()
-
 
 model = TorchMaskRCNN()
