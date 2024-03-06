@@ -435,15 +435,15 @@ export class Keypoint extends paper.Point {
     return this._fillColor;
   }
 
-  set strokeColor(val) {
-    this._strokeColor = val;
-    this.path.strokeColor = this.selected ? "white" : val;
-    this.updateFillColor();
-  }
+  // set strokeColor(val) {
+  //   this._strokeColor = val;
+  //   this.path.strokeColor = this.selected ? "white" : val;
+  //   this.updateFillColor();
+  // }
 
-  get strokeColor() {
-    return this._strokeColor;
-  }
+  // get strokeColor() {
+  //   return this._strokeColor;
+  // }
 
   updateFillColor() {
     if (this.path == null) return;

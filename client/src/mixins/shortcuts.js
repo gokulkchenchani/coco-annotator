@@ -93,6 +93,13 @@ export default {
             if (!this.$refs.polygon.isDisabled) this.activeTool = "Polygon";
           }
         },
+        {
+          default: ["shift","v"],
+          name: "Polygon Eraser Tool",
+          function: () => {
+            if (!this.$refs.polygon.isDisabled) this.activeTool = "Polygon Eraser";
+          }
+        },
         
         {
           default: ["w"],

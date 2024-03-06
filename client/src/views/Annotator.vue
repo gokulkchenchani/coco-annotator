@@ -30,6 +30,12 @@
           @setcursor="setCursor"
           ref="polygon"
         />
+        <PolygonEraser
+          v-model="activeTool"
+          :scale="image.scale"
+          @setcursor="setCursor"
+          ref="polygoneraser"
+        />
 
         <MagicWandTool
           v-model="activeTool"
@@ -302,6 +308,7 @@ import EraserTool from "@/components/annotator/tools/EraserTool";
 import BrushTool from "@/components/annotator/tools/BrushTool";
 import KeypointTool from "@/components/annotator/tools/KeypointTool";
 import DEXTRTool from "@/components/annotator/tools/DEXTRTool";
+import PolygonEraser from "@/components/annotator/tools/PolygonEraser";
 
 // import FilterTool from "@/components/annotator/tools/FilterTool";
 import FBoxPanel from "@/components/annotator/panels/FBoxPanel";
@@ -377,8 +384,9 @@ export default {
     DEXTRTool,
     DEXTRPanel,
     // FilterTool,
-    FilterPanel
-  },
+    FilterPanel,
+    PolygonEraser
+},
   mixins: [toastrs, shortcuts],
   props: {
     identifier: {
@@ -509,7 +517,7 @@ export default {
     onpinchstart(e) {
       e.preventDefault();
       if (!this.doneLoading) return;
-      let view = this.paper.view;
+      // let view = this.paper.view;
       this.pinching.old_zoom = this.paper.view.zoom;
       return false;
     },
@@ -708,7 +716,7 @@ export default {
       }
       if (indices.keypoint !== -1) {
         this.current.keypoint = indices.keypoint;
-        let ann = this.currentCategory.category.annotations[this.current.annotation];
+        // let ann = this.currentCategory.category.annotations[this.current.annotation];
         let kpTool = this.$refs.keypoint;
         let selectTool = this.$refs.select;
         let category = this.$refs.category[this.current.category];

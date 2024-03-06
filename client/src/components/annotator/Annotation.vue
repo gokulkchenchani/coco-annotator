@@ -61,7 +61,7 @@
 
     <ul v-show="showKeypoints" ref="collapse_keypoints"
         class="list-group keypoint-list">
-      <li v-for="(kp, index) in keypointListView" :key="index"
+      <li v-for="(kp, kpIndex) in keypointListView" :key="kpIndex"
           :style="{'background-color': kp.backgroundColor}"
           class="list-group-item text-left keypoint-item">
         <div>
@@ -70,7 +70,7 @@
               />
         </div>
         <a
-          @click="onAnnotationKeypointClick(index)"
+          @click="onAnnotationKeypointClick(kpIndex)"
           :style="{
             float: 'left',
             width: '70%',
@@ -81,7 +81,7 @@
         </a>
         <i
           v-if="kp.visibility !== 0"
-          @click="onAnnotationKeypointSettingsClick(index)"
+          @click="onAnnotationKeypointSettingsClick(kpIndex)"
           class="fa fa-gear annotation-icon"
           style="float:right; color: lightgray;"
           data-toggle="modal"
@@ -89,7 +89,7 @@
         />
         <i
           v-if="kp.visibility !== 0"
-          @click="onDeleteKeypointClick(index)"
+          @click="onDeleteKeypointClick(kpIndex)"
           class="fa fa-trash-o annotation-icon"
           style="float:right; color: lightgray;"
         />
@@ -233,7 +233,7 @@ import { Keypoint, Keypoints, VisibilityOptions } from "@/libs/keypoints";
 import { mapMutations } from "vuex";
 import UndoAction from "@/undo";
 
-import TagsInput from "@/components/TagsInput";
+// import TagsInput from "@/components/TagsInput";
 import Metadata from "@/components/Metadata";
 
 let $ = JQuery;
@@ -242,7 +242,7 @@ export default {
   name: "Annotation",
   components: {
     Metadata,
-    TagsInput
+    // TagsInput
   },
   props: {
     annotation: {
